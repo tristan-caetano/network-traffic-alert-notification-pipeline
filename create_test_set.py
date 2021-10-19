@@ -1,7 +1,8 @@
 import csv
 import pandas as pd
+import xlwt 
 from pandas.core.arrays.sparse import dtype
-# from functools import cache
+from xlwt import Workbook
 
 # Creating file that contains all the row number mal packets from the UNSW-NB15_1.csv dataset 
 # THIS SHOULD ONLY HAVE TO BE RUN ONCE PER FILE
@@ -44,8 +45,39 @@ def digest_file():
     print(arr)
 
 def make_test_file():
+    r = open('list_of_rows.txt', 'r')
+    line = r.readlines()
+    new_line = []
+    for rows in line:
+        temp = rows.strip().split('\n')
+        temp = str(temp).strip("['']")
+        new_line.append(int(temp))
 
+    # Pandas Import CSV
+    p_dataset = pd.read_csv('UNSW-NB15_1.csv', low_memory = False)
 
+    # Creating a null value for the comparison
+    null = p_dataset[p_dataset.columns[47]][0]
 
+    # Prints number and names of unique values in malicious packet index
+    unique_names = p_dataset[p_dataset.columns[47]].unique()
 
-# digest_file()
+    wb = Workbook() 
+    sheet1 = wb.add_sheet('Sheet 1') 
+    counter = 0
+    a = 0
+
+    for y in range(10):
+        counter = 0
+        for x in range(22215):
+            if p_dataset[p_dataset.columns[47]][unique_names[x]] == unique_names[y] and p_dataset[p_dataset.columns[47]][unique_names[x]] != null and counter < 50:
+                for y in range(49):
+                    # Write row here
+                    sheet1.write(a, y, p_dataset[p_dataset.columns[x]][y]) 
+                    a += 1
+                    counter += 1
+
+    wb.save('perceptron_test_set.csv') 
+
+#digest_file()
+make_test_file()
