@@ -108,9 +108,14 @@ def make_test_file():
     # Create new XLS and save values to it
     wb.save('perceptron_test_set.xls') 
 
-    print('\nFile Created: perceptron_test_set.xls \nConvert to CSV in Excel.\n')
+    print('\nFile Created: perceptron_test_set.xls')
+    print('\nConverting XLS to CSV')
+    
+    # Converting XLS to CSV
+    read_file = pd.read_excel (r'perceptron_test_set.xls', sheet_name='Sheet 1')
+    read_file.to_csv (r'perceptron_test_set.csv', index = None, header=True)
 
-    # CONVERT TO CSV IN EXCEL
+    print('\nFile Created: perceptron_test_set.csv')
 
 digest_file()
 #make_test_file()
