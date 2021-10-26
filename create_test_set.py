@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 import pandas as pd
 import xlwt 
 from pandas.core.arrays.sparse import dtype
@@ -81,12 +82,35 @@ def make_test_file():
     # For loop that gets at most 50 of each type of malware and saves it to a spreadsheet
     for y in range(9):
         counter = 0
+        
         for x in range(22215):
             if p_dataset[p_dataset.columns[47]][new_line[x]] == unique_names[y+1] and counter < 50:
+
                 for z in range(49):
-                    sheet1.write(a, z, str(p_dataset[p_dataset.columns[z]][new_line[x]]))
+                    temp_val = p_dataset[p_dataset.columns[z]][new_line[x]]
+                    
+                    if z == 0 or z == 2:
+                        temp_val = str(temp_val).replace(".", "")
+
+                    elif z == 4 or z == 5 or z == 13 or z == 47:
+                        parameterize = p_dataset[p_dataset.columns[z]].unique()
+                        
+                        for w in parameterize:
+                            if w == temp_val:
+                                temp_val = np.where(parameterize == w)
+                                # Removing remaining strings
+                                temp_val = str(temp_val).replace("(", "")
+                                temp_val = str(temp_val).replace(")", "")
+                                temp_val = str(temp_val).replace("[", "")
+                                temp_val = str(temp_val).replace("]", "")
+                                temp_val = str(temp_val).replace(",", "")
+                                temp_val = str(temp_val).replace("array", "")
+                            
+                    sheet1.write(a, z, str(temp_val))
+
                 a += 1
                 counter += 1
+                        
             elif(counter > 49):
                 break
 
@@ -98,10 +122,32 @@ def make_test_file():
     # For loop that gets at most 50 clean packets and saves to spreadsheet
     for x in range(22215):
         if int(p_dataset[p_dataset.columns[48]][x]) == 0 and counter < 50:
+
             for z in range(49):
-                sheet1.write(a, z, str(p_dataset[p_dataset.columns[z]][x])) 
+                temp_val = p_dataset[p_dataset.columns[z]][new_line[x]]
+                    
+                if z == 0 or z == 2:
+                    temp_val = str(temp_val).replace(".", "")
+
+                elif z == 4 or z == 5 or z == 13 or z == 47:
+                    parameterize = p_dataset[p_dataset.columns[z]].unique()
+                        
+                    for w in parameterize:
+                        if w == temp_val:
+                            temp_val = np.where(parameterize == w)
+                            # Removing remaining strings
+                            temp_val = str(temp_val).replace("(", "")
+                            temp_val = str(temp_val).replace(")", "")
+                            temp_val = str(temp_val).replace("[", "")
+                            temp_val = str(temp_val).replace("]", "")
+                            temp_val = str(temp_val).replace(",", "")
+                            temp_val = str(temp_val).replace("array", "")
+                            
+                sheet1.write(a, z, str(temp_val))
+
             a += 1
             counter += 1
+
         elif(counter > 49):
             break
 
@@ -117,5 +163,5 @@ def make_test_file():
 
     print('\nFile Created: perceptron_test_set.csv')
 
-digest_file()
-#make_test_file()
+#digest_file()
+make_test_file()
