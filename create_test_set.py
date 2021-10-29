@@ -134,14 +134,18 @@ def make_test_file():
                         
                     for w in parameterize:
                         if w == temp_val:
+                            print(temp_val)
+                            
                             temp_val = np.where(parameterize == w)
                             # Removing remaining strings
+                            
                             temp_val = str(temp_val).replace("(", "")
                             temp_val = str(temp_val).replace(")", "")
                             temp_val = str(temp_val).replace("[", "")
                             temp_val = str(temp_val).replace("]", "")
                             temp_val = str(temp_val).replace(",", "")
                             temp_val = str(temp_val).replace("array", "")
+
                             
                 sheet1.write(a, z, str(temp_val))
 
