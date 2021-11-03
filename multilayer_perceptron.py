@@ -137,4 +137,4 @@ print(col_num)
 
 # check_accuracy(train_loader, model)
 # check_accuracy(test_loader, model)
-        
+#       
