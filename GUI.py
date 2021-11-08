@@ -1,41 +1,53 @@
 import tkinter as tk
-import os
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 
-os.environ.__setitem__('DISPLAY', ':0.0')
-
-win = tk.Tk()
+win= Tk()
 
 #resize window
-#win.geometry("700x350")
+win.geometry("700x600")
 
 #this is what happens when you click the import button
 def import_box(event=None):
    filename = filedialog.askopenfilename() #unsure if this can do multiple files
-   print('Selected:', filename)#replace this with adding file(s) to queue
+   print('Selected:', filename)
+   output.configure(state='normal')
+   output.insert(tk.END, 'Selected file: ')
+   output.insert(tk.END, filename)
+   output.insert(tk.END, '\n')
+   output.see(tk.END)
+   output.configure(state='disabled')
+   #call to add file to queue
 
 #this is what happens when you click the clear button
 def clear_queue(event=None):
-   print('queue clear event')#replace this
+   print('queue clear event')
+   output.configure(state='normal')
+   output.insert(tk.END, 'Queue Cleared (theres no queue yet)\n')
+   output.see(tk.END)
+   output.configure(state='disabled')
+   #call clear queue
 
 #this is what happens when you click the GO button
 def start(event=None):
-   print('start process')#call the analyze script
+   print('start process')
+   output.configure(state='normal')
+   output.insert(tk.END, 'Analyzing... (actually its not)\n')
+   output.see(tk.END)
+   output.configure(state='disabled')
+   #call the script
 
 #create label
-Label(win, text= "File fuckin test thing").pack(pady= 30)
+Label(win, text= "File fuckin test thing").pack(pady= 10)
 
 #create buttons
-ttk.Button(win, text= "Import PCAP Files", command=import_box).pack(pady= 20)
-ttk.Button(win, text= "Clear Queue", command=clear_queue).pack(pady= 20)
-ttk.Button(win, text= "Analyze", command=start).pack(pady= 20)
+ttk.Button(win, text= "Import PCAP Files", command=import_box).pack(pady= 10)
+ttk.Button(win, text= "Clear Queue", command=clear_queue).pack(pady= 10)
+ttk.Button(win, text= "Analyze", command=start).pack(pady= 10)
 
-#create output textbox
-# output = tk.Text(win, width = 25, height = 50)
-# output.grid(row = 1, column = 0, columnspan = 50)
-#to clear the output window -> output.delete(1.0,"") or something like that???
-#to add to the output window -> output.insert("blhablahblahb") i think???
+#output window
+output = Text(win, state = 'disabled', width=80, height=60)
+output.pack(pady=20)
 
 win.mainloop()
