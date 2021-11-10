@@ -1,4 +1,6 @@
+#  ---------------  Libraries  ---------------
 import csv
+import tkinter as tk
 import numpy as np
 import pandas as pd
 import xlwt 
@@ -7,11 +9,18 @@ from xlwt import Workbook
 
 # Creating file that contains all the row number mal packets from the UNSW-NB15_1.csv dataset 
 # THIS SHOULD ONLY HAVE TO BE RUN ONCE PER FILE
-def digest_file():
+def digest_file(dataset, output):
     
-    print('\nOpening original dataset, please wait.')
+    # print('\nOpening original dataset, please wait.')
+    output.configure(state='normal')
+    output.insert(tk.END, '\nOpening original dataset, please wait.')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
+
+
     # Pandas Import CSV
-    p_dataset = pd.read_csv('UNSW-NB15_1.csv', low_memory=False)
+    p_dataset = pd.read_csv(dataset, low_memory=False)
 
     # Creating dataset from CSV data
     dataframe = pd.DataFrame(p_dataset)
@@ -27,7 +36,14 @@ def digest_file():
     # Creating a null value for the comparison
     null = p_dataset[p_dataset.columns[47]][0]
 
-    print('\nIterating through entire dataset, this may take a bit.')
+    #print('\nIterating through entire dataset, this may take a bit.')
+
+    output.configure(state='normal')
+    output.insert(tk.END, '\nIterating through entire dataset, this may take a bit.')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
+
     # For loops that populate the respective arrays
     for x in range(700000):
         for y in range(10):
@@ -41,12 +57,18 @@ def digest_file():
         f.write(str(rows) + "\n")
     f.close()
 
-    print('\nFile Created: list_of_rows.txt')
+    #print('\nFile Created: list_of_rows.txt')
 
-    make_test_file()
+    output.configure(state='normal')
+    output.insert(tk.END, '\nIterating through entire dataset, this may take a bit.')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
+
+    make_test_file(output)
 
 # Creating CSV test set for Multilayer Perceptron
-def make_test_file():
+def make_test_file(output):
 
     # Opening original test set for data extraction
     r = open('list_of_rows.txt', 'r')
@@ -59,7 +81,13 @@ def make_test_file():
         temp = str(temp).strip("['']")
         new_line.append(int(temp))
 
-    print('\nOpening original dataset, please wait.')
+    #print('\nOpening original dataset, please wait.')
+    output.configure(state='normal')
+    output.insert(tk.END, '\nOpening original dataset, please wait.')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
+
     # Pandas Import Original CSV
     p_dataset = pd.read_csv('UNSW-NB15_1.csv', low_memory = False)
 
@@ -77,7 +105,13 @@ def make_test_file():
     counter = 0
     a = 0
 
-    print('\nSaving list of malware packets, please wait.')
+    # print('\nSaving list of malware packets, please wait.')
+
+    output.configure(state='normal')
+    output.insert(tk.END, '\nSaving list of malware packets, please wait.')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
 
     # For loop that gets at most 50 of each type of malware and saves it to a spreadsheet
     for y in range(9):
@@ -117,7 +151,13 @@ def make_test_file():
     # Resetting Counter so the next loop is not skipped
     counter = 0
 
-    print('\nSaving list of clean packets, please wait.')
+    #print('\nSaving list of clean packets, please wait.')
+
+    output.configure(state='normal')
+    output.insert(tk.END, '\nSaving list of clean packets, please wait.')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
 
     # For loop that gets at most 50 clean packets and saves to spreadsheet
     for x in range(22215):
@@ -156,16 +196,27 @@ def make_test_file():
             break
 
     # Create new XLS and save values to it
-    wb.save('perceptron_test_set.xls') 
+    wb.save('perceptron_test_set.xls')
 
-    print('\nFile Created: perceptron_test_set.xls')
-    print('\nConverting XLS to CSV')
+    #print('\nFile Created: perceptron_test_set.xls')
+    #print('\nConverting XLS to CSV')
+
+    output.configure(state='normal')
+    output.insert(tk.END, '\nFile Created: perceptron_test_set.xls\nConverting XLS to CSV')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
     
     # Converting XLS to CSV
     read_file = pd.read_excel (r'perceptron_test_set.xls', sheet_name='Sheet 1')
     read_file.to_csv (r'perceptron_test_set.csv', index = None, header=True)
 
-    print('\nFile Created: perceptron_test_set.csv')
+    #print('\nFile Created: perceptron_test_set.csv')
+    output.configure(state='normal')
+    output.insert(tk.END, '\nFile Created: perceptron_test_set.csv')
+    output.see(tk.END)
+    output.configure(state='disabled')
+    output.update()
 
 #digest_file()
-make_test_file()
+#make_test_file()
