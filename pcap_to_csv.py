@@ -13,7 +13,7 @@ def convert(output, in_file):
 
     gp.print(output, '\nBeginning Conversion')
     
-    os.system('tshark -r small.pcap -T fields -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport  -e frame.protocols -e frame.time_relative -e tcp.analysis.bytes_in_flight -e ip.ttl -e frame.protocols > traffic.csv') #Uses command line argument to read in the PCAP
+    os.system('tshark -r small.pcap -T fields -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport  -e frame.protocols -e frame.time_relative -e tcp.analysis.bytes_in_flight -e ip.ttl -e frame.protocols -E separator=,>' + out_file) #Uses command line argument to read in the PCAP
 
     gp.print(output, ('\nConversion Complete!\nFile Created: ' + out_file))
 
