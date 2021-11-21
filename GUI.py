@@ -9,8 +9,10 @@ import os
 import os.path
 import threading
 import csv
+import pandas as pd
 
 win= Tk()
+global tree
 
 # Resize window
 win.geometry("1200x800")
@@ -22,7 +24,7 @@ def import_box(event=None):
    filename = filedialog.askopenfilename()
    filename = os.path.basename(filename)
    output.configure(state='normal')
-   my_str = filename[-5]
+   my_str = filename[-5:]
    if my_str == ".pcap":
       output.insert(tk.END, 'Selected PCAP: ')
       output.insert(tk.END, filename)
@@ -41,6 +43,7 @@ def import_box2(event=None):
 
    # The if-statement and else-statement detects if the file is a CSV or not.
    my_str = filenameCSV[-4:]
+   output.configure(state='normal')
    if my_str == ".csv":
       output.insert(tk.END, 'Selected CSV file: ')
       output.insert(tk.END, filenameCSV)
@@ -59,7 +62,8 @@ def start(event=None):
    output.insert(tk.END, 'Starting Conversion...\n')
    output.see(tk.END)
    output.configure(state='disabled')
-   cv.convert(output, filename)
+   curr_csv = cv.convert(output, filename)
+   show_csv(curr_csv)
    # Call the conversion script
    
 #this is what happens when you click the clear button
@@ -78,7 +82,8 @@ def create_set(event=None):
    output.configure(state='disabled')
    print("Running...: ", filenameCSV)
    print(type(filenameCSV))
-   cts.digest_file(filenameCSV, output)
+   curr_csv = cts.digest_file(filenameCSV, output)
+   show_csv(curr_csv)
    # Call the script using filenameCSV
 
 # Create labels
@@ -94,44 +99,57 @@ ttk.Button(win, text= "Import CSV", command=import_box2).place(x=180, y=40)
 ttk.Button(win, text= "Create Test Set", command=create_set).place(x=180, y=80)
 
 # Output window
+
 output = Text(win, state = 'disabled', width=40, height=36)
 output.place(x=50, y=204)
 
+
+
 #CSV view
-TableMargin = Frame(win, width=100)
-TableMargin.place(x=400, y=40)
+def show_csv(csvfile):
+   # if tree.winfo_exists() == 1:
+   #    tree.destroy()
 
-scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
-scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
-tree = ttk.Treeview(TableMargin, columns=("1", "2", "3","4"), height=35, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
-scrollbary.config(command=tree.yview)
-scrollbary.pack(side=RIGHT, fill=Y)
-scrollbarx.config(command=tree.xview)
-scrollbarx.pack(side=BOTTOM, fill=X)
-tree.heading('1', text="1", anchor=W)
-tree.heading('2', text="2", anchor=W)
-tree.heading('3', text="3", anchor=W)
-tree.heading('4', text="4", anchor=W)
-tree.column('#0', stretch=NO, minwidth=0, width=0)
-tree.column('#1', stretch=NO, minwidth=0, width=40)
-tree.column('#2', stretch=NO, minwidth=0, width=40)
-tree.column('#3', stretch=NO, minwidth=0, width=40)
-tree.column('#3', stretch=NO, minwidth=0, width=40)
-tree.pack()
-#with open(filename) as f:
-#  reader = csv.DictReader(f, delimiter=',')
-#  for row in reader:
-#    1 = row['1']
-#    2 = row['2']
-#    3 = row['3']
-#    4 = row['4']
-#    tree.insert("", 0, values=(1,2,3,4))
+   # Taking in CSV data and creating a dataframe
+   csv = pd.read_csv(csvfile, low_memory=False) 
+   dataframe = pd.DataFrame(csv)
+   # print(dataframe[dataframe.columns[0]][0])
 
-#start window
+   col_names = []
+
+   for col in dataframe:
+      col_names.append(dataframe[col])
+   
+   TableMargin = Frame(win, width=100)
+   TableMargin.place(x=400, y=40)
+
+   scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
+   scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
+   tree = ttk.Treeview(TableMargin, columns=(col_names), height=35, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+   
+   scrollbary.config(command=tree.yview)
+   scrollbary.pack(side=RIGHT, fill=Y)
+   scrollbarx.config(command=tree.xview)
+   scrollbarx.pack(side=BOTTOM, fill=X)
+
+   tree.column('#0', stretch=NO, minwidth=0, width=0)
+
+   num = 0
+   for i in col_names:
+      tree.heading(num, text=i, anchor=W)
+      tree.column(num, stretch=NO, minwidth=0, width=10)
+      num += num
+
+   tree.pack()
+
+   # with open(csvfile) as f:
+   #  reader = csv.DictReader(f, delimiter=',')
+   #  for row in reader:
+   #    1 = row['1']
+   #    2 = row['2']
+   #    3 = row['3']
+   #    4 = row['4']
+   #    tree.insert("", 0, values=(1,2,3,4))
+
+# start window
 win.mainloop()
-
-
-#output.configure(state='normal')
-#output.insert(tk.END, 'HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHHAHAHA')
-#output.see(tk.END)
-#output.configure(state='disabled')
