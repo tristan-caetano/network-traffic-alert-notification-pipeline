@@ -61,8 +61,10 @@ def start(event=None):
    output.configure(state='normal')
    output.insert(tk.END, 'Starting Conversion...\n')
    output.see(tk.END)
+   print("eqefwfwefwe: ", filename)
    output.configure(state='disabled')
    curr_csv = cv.convert(output, filename)
+   print("dfsfdsfds: ", curr_csv)
    show_csv(curr_csv)
    # Call the conversion script
    

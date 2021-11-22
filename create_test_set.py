@@ -41,9 +41,12 @@ def digest_file(dataset, output):
 
     gp.print(output, '\nIterating through entire dataset, this may take a bit.')
 
+    print("SHOULD BE 50000: ", len(p_dataset.index))
+    print("SHOULD BE 9: ", len(unique_names))
+
     # For loops that populate the respective arrays
-    for x in range(700000):
-        for y in range(10):
+    for x in range(len(p_dataset.index)):
+        for y in range(len(unique_names)):
             if p_dataset[p_dataset.columns[47]][x] == unique_names[y] and p_dataset[p_dataset.columns[47]][x] != null:
                 arr[y] += 1
                 usable_rows.append(x)
@@ -62,7 +65,7 @@ def digest_file(dataset, output):
 def make_test_file(output):
 
     # Name of output file
-    test_set_file = "perceptron_test_set.csv"
+    test_set_file = 'perceptron_test_set.xls'
 
     # Opening original test set for data extraction
     r = open('list_of_rows.txt', 'r')
@@ -100,10 +103,13 @@ def make_test_file(output):
     gp.print(output, '\nSaving list of malware packets, please wait.')
 
     # For loop that gets at most 50 of each type of malware and saves it to a spreadsheet
-    for y in range(9):
+    for y in range(len(unique_names) - 1):
         counter = 0
+
+        print("LENGTH NL: ", len(new_line))
+        print("LENGTH UN: ", len(unique_names))
         
-        for x in range(22215):
+        for x in range(len(new_line)):
             if p_dataset[p_dataset.columns[47]][new_line[x]] == unique_names[y+1] and counter < 50:
 
                 for z in range(49):
@@ -142,7 +148,7 @@ def make_test_file(output):
     gp.print(output, '\nSaving list of clean packets, please wait.')
 
     # For loop that gets at most 50 clean packets and saves to spreadsheet
-    for x in range(22215):
+    for x in range(len(new_line)):
         if int(p_dataset[p_dataset.columns[48]][x]) == 0 and counter < 50:
 
             for z in range(49):
