@@ -13,9 +13,14 @@ import csv
 
 win= Tk()
 
+outputname = StringVar()
+csvname = StringVar()
+outputname.set("Output:")
+csvname.set("CSV")
+
 # Resize window
 win.geometry("1600x800")
-win.title("cool gui for cool boys")
+win.title("Network Traffic Alert Notification Pipeline​ GUI")
 
 # This is what happens when you click the import button.
 def import_box(event=None):
@@ -56,8 +61,10 @@ def import_box2(event=None):
 
 # This is what happens when you click the GO button.
 def start(event=None):
+   outputname.set("Output: Converting PCAP to CSV...")
    print('start conversion')
    output.configure(state='normal')
+   output.delete(1.0, END)
    output.insert(tk.END, 'Starting Conversion...\n')
    output.see(tk.END)
    print("eqefwfwefwe: ", filename)
@@ -65,6 +72,7 @@ def start(event=None):
    curr_csv = cv.convert(output, filename)
    print("dfsfdsfds: ", curr_csv)
    show_csv(curr_csv)
+   outputname.set("Output:")
    # Call the conversion script
    
 #this is what happens when you click the clear button
@@ -76,19 +84,23 @@ def clear_output(event=None):
 
 # This is what happens when you click the CREATE TEST SET
 def create_set(event=None):
+   outputname.set("Output: Creating test set...")
    print('start create test set')
    output.configure(state='normal')
+   output.delete(1.0, END)
    output.insert(tk.END, 'Creating Test Set...\n')
    output.see(tk.END)
    output.configure(state='disabled')
    print("Running...: ", filenameCSV)
    print(type(filenameCSV))
    curr_csv = cts.digest_file(filenameCSV, output)
-   show_csv(curr_csv)
+   #show_csv(curr_csv)
+   outputname.set("Output:")
    # Call the script using filenameCSV
 
 #CSV view
 def show_csv(csvfile):
+   csvname.set("CSV: "+str(csvfile))
    #global importflag
    #if importflag==1:           yea dunno if this is needed
    #   tree.destroy()
@@ -96,7 +108,7 @@ def show_csv(csvfile):
    TableMargin.place(x=800, y=60)
    scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
    scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
-   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "blank?", "zeros", "a number", "smol number", "text"), height=32, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst"), height=32, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
    scrollbary.config(command=tree.yview)
    scrollbary.pack(side=RIGHT, fill=Y)
    scrollbarx.config(command=tree.xview)
@@ -105,42 +117,44 @@ def show_csv(csvfile):
    tree.heading('port src', text="port src", anchor=W)
    tree.heading('ip dest', text="ip dest", anchor=W)
    tree.heading('port dest', text="port dest", anchor=W)
-   tree.heading('blank?', text="blank?", anchor=W)
-   tree.heading('zeros', text="zeros", anchor=W)
-   tree.heading('a number', text="a number", anchor=W)
-   tree.heading('smol number', text="smol number", anchor=W)
-   tree.heading('text', text="text", anchor=W)
+   tree.heading('protocol', text="protocol", anchor=W)
+   tree.heading('active time', text="active time", anchor=W)
+   tree.heading('bytes', text="bytes", anchor=W)
+   tree.heading('active time', text="active time", anchor=W)
+   tree.heading('src tcp bsn', text="src tcp bsn", anchor=W)
+   tree.heading('active time', text="tcp cst", anchor=W)
    tree.column('#0', stretch=NO, minwidth=0, width=0)
    tree.column('#1', stretch=NO, minwidth=0, width=100)
-   tree.column('#2', stretch=NO, minwidth=0, width=50)
+   tree.column('#2', stretch=NO, minwidth=0, width=60)
    tree.column('#3', stretch=NO, minwidth=0, width=100)
-   tree.column('#4', stretch=NO, minwidth=0, width=50)
-   tree.column('#5', stretch=NO, minwidth=0, width=30)
+   tree.column('#4', stretch=NO, minwidth=0, width=60)
+   tree.column('#5', stretch=NO, minwidth=0, width=60)
    tree.column('#6', stretch=NO, minwidth=0, width=100)
    tree.column('#7', stretch=NO, minwidth=0, width=60)
-   tree.column('#8', stretch=NO, minwidth=0, width=50)
-   tree.column('#9', stretch=NO, minwidth=0, width=100)
+   tree.column('#8', stretch=NO, minwidth=0, width=60)
+   tree.column('#9', stretch=NO, minwidth=0, width=60)
    tree.pack()
 
    with open(csvfile) as f:
       reader = csv.DictReader(f, delimiter=',')
       for row in reader:
-         a = row['149.171.126.9']
+         a = row['149.171.126.9']            #use pandas to get each of these column names (just here tho everywhere else is ok)
          b = row['80']
          c = row['59.166.0.1']
          d = row['38606']
-         e = row['']
+         e = row['TCP']
          f = row['0.000000000']
          g = row['1448']
          h = row['30']
-         i = row['sll:ethertype:ip:tcp']
-         tree.insert("", 0, values=(a, b, c,d,e,f,g,h,i))
+         i = row['1']
+         j = row['1']
+         tree.insert("", 0, values=(a,b,c,d,e,f,g,h,i,j))
    importflag = 1
 
 # Create labels
-Label(win, text= "WORLDS GREATEST GUI").pack(pady= 10)
-Label(win, text= "OUTPUT:").place(x=50, y=184)
-Label(win, text= "CSV:").place(x=800, y=40)
+Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady= 10)
+Label(win, textvariable= str(outputname)).place(x=50, y=184)
+Label(win, textvariable= str(csvname)).place(x=800, y=40)
 
 # Create buttons
 ttk.Button(win, text= "Import PCAP", command=import_box).place(x=50, y=40)
