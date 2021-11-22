@@ -9,13 +9,12 @@ import os
 import os.path
 import threading
 import csv
-import pandas as pd
+#import pandas as pd
 
 win= Tk()
-global tree
 
 # Resize window
-win.geometry("1200x800")
+win.geometry("1600x800")
 win.title("cool gui for cool boys")
 
 # This is what happens when you click the import button.
@@ -88,10 +87,60 @@ def create_set(event=None):
    show_csv(curr_csv)
    # Call the script using filenameCSV
 
+#CSV view
+def show_csv(csvfile):
+   #global importflag
+   #if importflag==1:
+   #   tree.destroy()
+   TableMargin = Frame(win, width=16)
+   TableMargin.place(x=800, y=60)
+   scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
+   scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
+   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "blank?", "zeros", "a number", "smol number", "text"), height=32, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+   scrollbary.config(command=tree.yview)
+   scrollbary.pack(side=RIGHT, fill=Y)
+   scrollbarx.config(command=tree.xview)
+   scrollbarx.pack(side=BOTTOM, fill=X)
+   tree.heading('ip src', text="ip src", anchor=W)
+   tree.heading('port src', text="port src", anchor=W)
+   tree.heading('ip dest', text="ip dest", anchor=W)
+   tree.heading('port dest', text="port dest", anchor=W)
+   tree.heading('blank?', text="blank?", anchor=W)
+   tree.heading('zeros', text="zeros", anchor=W)
+   tree.heading('a number', text="a number", anchor=W)
+   tree.heading('smol number', text="smol number", anchor=W)
+   tree.heading('text', text="text", anchor=W)
+   tree.column('#0', stretch=NO, minwidth=0, width=0)
+   tree.column('#1', stretch=NO, minwidth=0, width=100)
+   tree.column('#2', stretch=NO, minwidth=0, width=50)
+   tree.column('#3', stretch=NO, minwidth=0, width=100)
+   tree.column('#4', stretch=NO, minwidth=0, width=50)
+   tree.column('#5', stretch=NO, minwidth=0, width=30)
+   tree.column('#6', stretch=NO, minwidth=0, width=100)
+   tree.column('#7', stretch=NO, minwidth=0, width=60)
+   tree.column('#8', stretch=NO, minwidth=0, width=50)
+   tree.column('#9', stretch=NO, minwidth=0, width=100)
+   tree.pack()
+
+   with open(csvfile) as f:
+      reader = csv.DictReader(f, delimiter=',')
+      for row in reader:
+         a = row['149.171.126.9']
+         b = row['80']
+         c = row['59.166.0.1']
+         d = row['38606']
+         e = row['']
+         f = row['0.000000000']
+         g = row['1448']
+         h = row['30']
+         i = row['sll:ethertype:ip:tcp']
+         tree.insert("", 0, values=(a, b, c,d,e,f,g,h,i))
+   importflag = 1
+
 # Create labels
 Label(win, text= "WORLDS GREATEST GUI").pack(pady= 10)
 Label(win, text= "OUTPUT:").place(x=50, y=184)
-Label(win, text= "CSV:").place(x=400, y=20)
+Label(win, text= "CSV:").place(x=800, y=40)
 
 # Create buttons
 ttk.Button(win, text= "Import PCAP", command=import_box).place(x=50, y=40)
@@ -102,56 +151,10 @@ ttk.Button(win, text= "Create Test Set", command=create_set).place(x=180, y=80)
 
 # Output window
 
-output = Text(win, state = 'disabled', width=40, height=36)
+output = Text(win, state = 'disabled', width=80, height=36)
 output.place(x=50, y=204)
 
 
-
-#CSV view
-def show_csv(csvfile):
-   # if tree.winfo_exists() == 1:
-   #    tree.destroy()
-
-   # Taking in CSV data and creating a dataframe
-   csv = pd.read_csv(csvfile, low_memory=False) 
-   dataframe = pd.DataFrame(csv)
-   # print(dataframe[dataframe.columns[0]][0])
-
-   col_names = []
-
-   for col in dataframe:
-      col_names.append(dataframe[col])
-   
-   TableMargin = Frame(win, width=100)
-   TableMargin.place(x=400, y=40)
-
-   scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
-   scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
-   tree = ttk.Treeview(TableMargin, columns=(col_names), height=35, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
-   
-   scrollbary.config(command=tree.yview)
-   scrollbary.pack(side=RIGHT, fill=Y)
-   scrollbarx.config(command=tree.xview)
-   scrollbarx.pack(side=BOTTOM, fill=X)
-
-   tree.column('#0', stretch=NO, minwidth=0, width=0)
-
-   num = 0
-   for i in col_names:
-      tree.heading(num, text=i, anchor=W)
-      tree.column(num, stretch=NO, minwidth=0, width=10)
-      num += num
-
-   tree.pack()
-
-   # with open(csvfile) as f:
-   #  reader = csv.DictReader(f, delimiter=',')
-   #  for row in reader:
-   #    1 = row['1']
-   #    2 = row['2']
-   #    3 = row['3']
-   #    4 = row['4']
-   #    tree.insert("", 0, values=(1,2,3,4))
 
 # start window
 win.mainloop()
