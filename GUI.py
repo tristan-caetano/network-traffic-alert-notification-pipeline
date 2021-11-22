@@ -90,7 +90,7 @@ def create_set(event=None):
 #CSV view
 def show_csv(csvfile):
    #global importflag
-   #if importflag==1:
+   #if importflag==1:           yea dunno if this is needed
    #   tree.destroy()
    TableMargin = Frame(win, width=16)
    TableMargin.place(x=800, y=60)
