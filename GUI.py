@@ -1,6 +1,7 @@
 #  ---------------  Libraries  ---------------
 import tkinter as tk
 import create_test_set as cts
+from parameterizer import parameterize
 import pcap_to_csv as cv
 from tkinter import *
 from tkinter import filedialog
@@ -9,7 +10,10 @@ import os
 import os.path
 import threading
 import csv
-#import pandas as pd
+import GUI_print as gp
+import data_trimmer as dt
+import pandas as pd
+import parameterizer as pm
 
 win= Tk()
 
@@ -19,7 +23,7 @@ outputname.set("Output:")
 csvname.set("CSV")
 
 # Resize window
-win.geometry("1600x800")
+win.geometry("1920x1080")
 win.title("Network Traffic Alert Notification Pipeline​ GUI")
 
 # This is what happens when you click the import button.
@@ -94,7 +98,31 @@ def create_set(event=None):
    print("Running...: ", filenameCSV)
    print(type(filenameCSV))
    curr_csv = cts.digest_file(filenameCSV, output)
-   #show_csv(curr_csv)
+   show_csv(curr_csv)
+   outputname.set("Output:")
+   # Call the script using filenameCSV
+
+   # This is what happens when you click the Trim Data Set
+def trim_dataset(event=None):
+   outputname.set("Output: Trimming Data Set...")
+   print('start create test set')
+   gp.print(output, '\nTrimming Data Set...\n')
+   print("Running...: ", filenameCSV)
+   print(type(filenameCSV))
+   curr_csv = dt.trim(filenameCSV, output)
+   show_csv(curr_csv)
+   outputname.set("Output:")
+   # Call the script using filenameCSV
+
+      # This is what happens when you click the Trim Data Set
+def parameterize(event=None):
+   outputname.set("Output: Parameterizing converted dataset...")
+   print('start create test set')
+   gp.print(output, '\nParameterizing converted dataset...\n')
+   print("Running...: ", filenameCSV)
+   print(type(filenameCSV))
+   curr_csv = pm.parameterize(filenameCSV, output)
+   show_csv(curr_csv)
    outputname.set("Output:")
    # Call the script using filenameCSV
 
@@ -105,10 +133,10 @@ def show_csv(csvfile):
    #if importflag==1:           yea dunno if this is needed
    #   tree.destroy()
    TableMargin = Frame(win, width=16)
-   TableMargin.place(x=800, y=60)
+   TableMargin.place(x=650, y=60)
    scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
    scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
-   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst"), height=32, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst", "mal packet type", "is mal?"), height=32, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
    scrollbary.config(command=tree.yview)
    scrollbary.pack(side=RIGHT, fill=Y)
    scrollbarx.config(command=tree.xview)
@@ -120,48 +148,50 @@ def show_csv(csvfile):
    tree.heading('protocol', text="protocol", anchor=W)
    tree.heading('active time', text="active time", anchor=W)
    tree.heading('bytes', text="bytes", anchor=W)
-   tree.heading('active time', text="active time", anchor=W)
+   tree.heading('live time', text="live time", anchor=W)
    tree.heading('src tcp bsn', text="src tcp bsn", anchor=W)
-   tree.heading('active time', text="tcp cst", anchor=W)
+   tree.heading('tcp cst', text="tcp cst", anchor=W)
+   tree.heading('mal packet type', text="mal packet type", anchor=W)
+   tree.heading('is mal?', text="is mal?", anchor=W)
    tree.column('#0', stretch=NO, minwidth=0, width=0)
    tree.column('#1', stretch=NO, minwidth=0, width=100)
    tree.column('#2', stretch=NO, minwidth=0, width=60)
    tree.column('#3', stretch=NO, minwidth=0, width=100)
    tree.column('#4', stretch=NO, minwidth=0, width=60)
-   tree.column('#5', stretch=NO, minwidth=0, width=60)
+   tree.column('#5', stretch=NO, minwidth=0, width=80)
    tree.column('#6', stretch=NO, minwidth=0, width=100)
    tree.column('#7', stretch=NO, minwidth=0, width=60)
    tree.column('#8', stretch=NO, minwidth=0, width=60)
-   tree.column('#9', stretch=NO, minwidth=0, width=60)
+   tree.column('#9', stretch=NO, minwidth=0, width=100)
+   tree.column('#10', stretch=NO, minwidth=0, width=60)
+   tree.column('#11', stretch=NO, minwidth=0, width=100)
    tree.pack()
 
+   rows = []
+
    with open(csvfile) as f:
-      reader = csv.DictReader(f, delimiter=',')
+      reader = csv.reader(f, delimiter=',')
+      
+      # This works, buts its incredibly slow
       for row in reader:
-         a = row['149.171.126.9']            #use pandas to get each of these column names (just here tho everywhere else is ok)
-         b = row['80']
-         c = row['59.166.0.1']
-         d = row['38606']
-         e = row['TCP']
-         f = row['0.000000000']
-         g = row['1448']
-         h = row['30']
-         i = row['1']
-         j = row['1']
-         tree.insert("", 0, values=(a,b,c,d,e,f,g,h,i,j))
+         print(row)           #use pandas to get each of these column names (just here tho everywhere else is ok)
+         tree.insert("", 0, values=row)
+
    importflag = 1
 
 # Create labels
 Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady= 10)
 Label(win, textvariable= str(outputname)).place(x=50, y=184)
-Label(win, textvariable= str(csvname)).place(x=800, y=40)
+Label(win, textvariable= str(csvname)).place(x=700, y=40)
 
 # Create buttons
 ttk.Button(win, text= "Import PCAP", command=import_box).place(x=50, y=40)
 ttk.Button(win, text= "Convert to CSV", command=start).place(x=50, y=80)
 ttk.Button(win, text= "Clear Output", command=clear_output).place(x=50, y=150)
-ttk.Button(win, text= "Import CSV", command=import_box2).place(x=180, y=40)
+ttk.Button(win, text= "Import CSV", command=import_box2).place(x=280, y=40)
 ttk.Button(win, text= "Create Test Set", command=create_set).place(x=180, y=80)
+ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=280, y=80)
+ttk.Button(win, text= "Parameterize", command=parameterize).place(x=369, y=80)
 
 # Output window
 

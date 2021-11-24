@@ -29,13 +29,16 @@ def digest_file(dataset, output):
     # These arrays will contain the number of each malware type and each row that contains a malicious packet respectively
     arr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     usable_rows = []
+    mloc = 10
 
     # Prints number and names of unique values in malicious packet index
     #unique_vals = p_dataset[p_dataset.columns[47]].nunique()
-    unique_names = p_dataset[p_dataset.columns[47]].unique()
+    #unique_names = p_dataset[p_dataset.columns[47]].unique()
+    unique_names = p_dataset[p_dataset.columns[mloc]].unique()
 
     # Creating a null value for the comparison
-    null = p_dataset[p_dataset.columns[47]][0]
+    # null = p_dataset[p_dataset.columns[47]][0]
+    null = p_dataset[p_dataset.columns[mloc]][0]
 
     #print('\nIterating through entire dataset, this may take a bit.')
 
@@ -47,7 +50,8 @@ def digest_file(dataset, output):
     # For loops that populate the respective arrays
     for x in range(len(p_dataset.index)):
         for y in range(len(unique_names)):
-            if p_dataset[p_dataset.columns[47]][x] == unique_names[y] and p_dataset[p_dataset.columns[47]][x] != null:
+            #if p_dataset[p_dataset.columns[47]][x] == unique_names[y] and p_dataset[p_dataset.columns[47]][x] != null:
+            if p_dataset[p_dataset.columns[mloc]][x] == unique_names[y] and p_dataset[p_dataset.columns[mloc]][x] != null:
                 arr[y] += 1
                 usable_rows.append(x)
 
@@ -59,16 +63,18 @@ def digest_file(dataset, output):
 
     #print('\nFile Created: list_of_rows.txt')
 
-    return(make_test_file(output))
+    return(make_test_file(output, mloc))
 
 # Creating CSV test set for Multilayer Perceptron
-def make_test_file(output):
+def make_test_file(output, mloc):
 
     # Name of output file
     test_set_file = 'perceptron_test_set.xls'
 
     # Opening original test set for data extraction
     r = open('list_of_rows.txt', 'r')
+
+    max_col = 12
 
     # Taking idicies of malicious packets from text file and placing them in a list variable
     line = r.readlines()
@@ -83,12 +89,14 @@ def make_test_file(output):
 
     # Pandas Import Original CSV
     p_dataset = pd.read_csv('UNSW-NB15_1.csv', low_memory = False)
+    p_dataset = pd.read_csv('testsnip.csv', low_memory = False)
 
     # Creating a null value for the comparison
-    null = p_dataset[p_dataset.columns[47]][0]
+    # null = p_dataset[p_dataset.columns[47]][0]
 
     # Prints number and names of unique values in malicious packet index
-    unique_names = p_dataset[p_dataset.columns[47]].unique()
+    #unique_names = p_dataset[p_dataset.columns[47]].unique()
+    unique_names = p_dataset[p_dataset.columns[mloc]].unique()
  
     # Creating workbook to save test set until its written to a csv
     wb = Workbook() 
@@ -110,15 +118,17 @@ def make_test_file(output):
         print("LENGTH UN: ", len(unique_names))
         
         for x in range(len(new_line)):
-            if p_dataset[p_dataset.columns[47]][new_line[x]] == unique_names[y+1] and counter < 50:
+            #if p_dataset[p_dataset.columns[47]][new_line[x]] == unique_names[y+1] and counter < 50:
+            if p_dataset[p_dataset.columns[mloc]][new_line[x]] == unique_names[y+1] and counter < 50:
 
-                for z in range(49):
+                #for z in range(49):
+                for z in range(max_col):
                     temp_val = p_dataset[p_dataset.columns[z]][new_line[x]]
                     
                     if z == 0 or z == 2:
                         temp_val = str(temp_val).replace(".", "")
 
-                    elif z == 4 or z == 5 or z == 13 or z == 47:
+                    elif z == 4 or z == 10: #or z == 5 or z == 13 or z == 47:
                         parameterize = p_dataset[p_dataset.columns[z]].unique()
                         
                         for w in parameterize:
@@ -149,15 +159,17 @@ def make_test_file(output):
 
     # For loop that gets at most 50 clean packets and saves to spreadsheet
     for x in range(len(new_line)):
-        if int(p_dataset[p_dataset.columns[48]][x]) == 0 and counter < 50:
+        if int(p_dataset[p_dataset.columns[max_col - 1]][x]) == 0 and counter < 50:
+            # int(p_dataset[p_dataset.columns[48]][x]) == 0 and counter < 50:
 
-            for z in range(49):
+            for z in range(max_col):
+            #for z in range(49):
                 temp_val = p_dataset[p_dataset.columns[z]][new_line[x]]
                     
                 if z == 0 or z == 2:
                     temp_val = str(temp_val).replace(".", "")
 
-                elif z == 4 or z == 5 or z == 13 or z == 47:
+                elif z == 4 or z == 10: #or z == 5 or z == 13 or z == 47:
                     parameterize = p_dataset[p_dataset.columns[z]].unique()
                         
                     for w in parameterize:
@@ -199,7 +211,7 @@ def make_test_file(output):
 
     gp.print(output, ('\nFile Created: ' + test_set_file))
 
-    return test_set_file
+    return "perceptron_test_set.csv"
 
 #digest_file()
 #make_test_file()
