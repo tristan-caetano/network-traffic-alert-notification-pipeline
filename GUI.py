@@ -26,24 +26,6 @@ csvname.set("CSV")
 win.geometry("1920x1080")
 win.title("Network Traffic Alert Notification Pipeline​ GUI")
 
-# This is what happens when you click the import button.
-def import_box(event=None):
-   global filename
-   filename = filedialog.askopenfilename()
-   filename = os.path.basename(filename)
-   output.configure(state='normal')
-   my_str = filename[-5:]
-   if my_str == ".pcap":
-      output.insert(tk.END, 'Selected PCAP: ')
-      output.insert(tk.END, filename)
-      output.insert(tk.END, '\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-   else:
-      output.insert(tk.END, 'File is not a PCAP\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-
 def import_box2(event=None):
    global filenameCSV
    filenameCSV = filedialog.askopenfilename()
@@ -65,18 +47,33 @@ def import_box2(event=None):
 
 # This is what happens when you click the GO button.
 def start(event=None):
-   outputname.set("Output: Converting PCAP to CSV...")
-   print('start conversion')
+   global filename
+   filename = filedialog.askopenfilename()
+   filename = os.path.basename(filename)
    output.configure(state='normal')
-   output.delete(1.0, END)
-   output.insert(tk.END, 'Starting Conversion...\n')
-   output.see(tk.END)
-   print("eqefwfwefwe: ", filename)
-   output.configure(state='disabled')
-   curr_csv = cv.convert(output, filename)
-   print("dfsfdsfds: ", curr_csv)
-   show_csv(curr_csv)
-   outputname.set("Output:")
+   my_str = filename[-5:]
+   if my_str == ".pcap":
+      output.insert(tk.END, 'Selected PCAP: ')
+      output.insert(tk.END, filename)
+      outputname.set("Output: Converting PCAP to CSV...")
+      print('start conversion')
+      output.configure(state='normal')
+      output.delete(1.0, END)
+      output.insert(tk.END, 'Starting Conversion...\n')
+      output.see(tk.END)
+      print("eqefwfwefwe: ", filename)
+      output.configure(state='disabled')
+      curr_csv = cv.convert(output, filename)
+      print("dfsfdsfds: ", curr_csv)
+      show_csv(curr_csv)
+      outputname.set("Output:")
+      output.insert(tk.END, '\n')
+      output.see(tk.END)
+      output.configure(state='disabled')
+   else:
+      output.insert(tk.END, 'File is not a PCAP\n')
+      output.see(tk.END)
+      output.configure(state='disabled')
    # Call the conversion script
    
 #this is what happens when you click the clear button
@@ -88,43 +85,46 @@ def clear_output(event=None):
 
 # This is what happens when you click the CREATE TEST SET
 def create_set(event=None):
-   outputname.set("Output: Creating test set...")
-   print('start create test set')
-   output.configure(state='normal')
-   output.delete(1.0, END)
-   output.insert(tk.END, 'Creating Test Set...\n')
-   output.see(tk.END)
-   output.configure(state='disabled')
-   print("Running...: ", filenameCSV)
-   print(type(filenameCSV))
-   curr_csv = cts.digest_file(filenameCSV, output)
-   show_csv(curr_csv)
-   outputname.set("Output:")
-   # Call the script using filenameCSV
+   if import_box2()==0:
+      outputname.set("Output: Creating test set:",filenameCSV)
+      print('start create test set')
+      output.configure(state='normal')
+      output.delete(1.0, END)
+      output.insert(tk.END, 'Creating Test Set...\n')
+      output.see(tk.END)
+      output.configure(state='disabled')
+      print("Running...: ", filenameCSV)
+      print(type(filenameCSV))
+      curr_csv = cts.digest_file(filenameCSV, output)
+      show_csv(curr_csv)
+      outputname.set("Output:")
+      # Call the script using filenameCSV
 
-   # This is what happens when you click the Trim Data Set
+      # This is what happens when you click the Trim Data Set
 def trim_dataset(event=None):
-   outputname.set("Output: Trimming Data Set...")
-   print('start create test set')
-   gp.print(output, '\nTrimming Data Set...\n')
-   print("Running...: ", filenameCSV)
-   print(type(filenameCSV))
-   curr_csv = dt.trim(filenameCSV, output)
-   show_csv(curr_csv)
-   outputname.set("Output:")
-   # Call the script using filenameCSV
+   if import_box2()==0:
+      outputname.set("Output: Trimming Data Set",filenameCSV)
+      print('start create test set')
+      gp.print(output, '\nTrimming Data Set...\n')
+      print("Running...: ", filenameCSV)
+      print(type(filenameCSV))
+      curr_csv = dt.trim(filenameCSV, output)
+      show_csv(curr_csv)
+      outputname.set("Output:")
+      # Call the script using filenameCSV
 
       # This is what happens when you click the Trim Data Set
 def parameterize(event=None):
-   outputname.set("Output: Parameterizing converted dataset...")
-   print('start create test set')
-   gp.print(output, '\nParameterizing converted dataset...\n')
-   print("Running...: ", filenameCSV)
-   print(type(filenameCSV))
-   curr_csv = pm.parameterize(filenameCSV, output)
-   show_csv(curr_csv)
-   outputname.set("Output:")
-   # Call the script using filenameCSV
+   if import_box2()==0:
+      outputname.set("Output: Parameterizing",filenameCSV)
+      print('start create test set')
+      gp.print(output, '\nParameterizing converted dataset...\n')
+      print("Running...: ", filenameCSV)
+      print(type(filenameCSV))
+      curr_csv = pm.parameterize(filenameCSV, output)
+      show_csv(curr_csv)
+      outputname.set("Output:")
+      # Call the script using filenameCSV
 
 #CSV view
 def show_csv(csvfile):
@@ -185,13 +185,10 @@ Label(win, textvariable= str(outputname)).place(x=50, y=184)
 Label(win, textvariable= str(csvname)).place(x=700, y=40)
 
 # Create buttons
-ttk.Button(win, text= "Import PCAP", command=import_box).place(x=50, y=40)
-ttk.Button(win, text= "Convert to CSV", command=start).place(x=50, y=80)
-ttk.Button(win, text= "Clear Output", command=clear_output).place(x=50, y=150)
-ttk.Button(win, text= "Import CSV", command=import_box2).place(x=280, y=40)
-ttk.Button(win, text= "Create Test Set", command=create_set).place(x=180, y=80)
-ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=280, y=80)
-ttk.Button(win, text= "Parameterize", command=parameterize).place(x=369, y=80)
+ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=50, y=40,height=40)
+ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=50, y=100,height=40)
+ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=200, y=40,height=40)
+ttk.Button(win, text= "Parameterize", command=parameterize).place(x=200, y=100,height=40)
 
 # Output window
 
