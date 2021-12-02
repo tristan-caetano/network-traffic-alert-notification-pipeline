@@ -183,14 +183,14 @@ def show_csv(csvfile):
 
 # Create labels
 Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady= 10)
-Label(win, text= "PCAP to CSV Pipeline").place(x=30, y=20)
-Label(win, text= "Test Set Pipeline").place(x=250, y=20)
+Label(win, text= "PCAP to CSV Pipeline").place(x=30, y=40)
+Label(win, text= "Test Set Pipeline").place(x=250, y=40)
 Label(win, textvariable= str(outputname)).place(x=30, y=184)
 Label(win, textvariable= str(csvname)).place(x=700, y=40)
 
 #divider line
 seperator=ttk.Separator(win, orient='vertical')
-seperator.place(x=210,y=40,height=100)
+seperator.place(x=210,y=44,height=120)
 
 # Create buttons
 ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=30, y=40,height=40)
