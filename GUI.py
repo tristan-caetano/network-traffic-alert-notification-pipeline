@@ -193,10 +193,10 @@ seperator=ttk.Separator(win, orient='vertical')
 seperator.place(x=210,y=44,height=120)
 
 # Create buttons
-ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=30, y=40,height=40)
-ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=100,height=40)
-ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=40,height=40)
-ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=100,height=40)
+ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=30, y=70,height=40)
+ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=120,height=40)
+ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=70,height=40)
+ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=120,height=40)
 
 # Output window
 
