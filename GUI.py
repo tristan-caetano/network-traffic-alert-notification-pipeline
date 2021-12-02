@@ -40,10 +40,12 @@ def import_box2(event=None):
       output.insert(tk.END, '\n')
       output.see(tk.END)
       output.configure(state='disabled')
+      return 0
    else:
       output.insert(tk.END, 'File is not a CSV\n')
       output.see(tk.END)
       output.configure(state='disabled')
+      return 1
 
 # This is what happens when you click the GO button.
 def start(event=None):
