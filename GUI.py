@@ -138,7 +138,7 @@ def show_csv(csvfile):
    TableMargin.place(x=700, y=60)
    scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
    scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
-   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst", "mal packet type", "is mal?"), height=36, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst", "mal packet type", "is mal?"), height=41, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
    scrollbary.config(command=tree.yview)
    scrollbary.pack(side=RIGHT, fill=Y)
    scrollbarx.config(command=tree.xview)
@@ -194,7 +194,7 @@ ttk.Button(win, text= "Parameterize", command=parameterize).place(x=200, y=100,h
 
 # Output window
 
-output = Text(win, state = 'disabled', width=80, height=36)
+output = Text(win, state = 'disabled', width=80, height=40)
 output.place(x=50, y=204)
 
 
