@@ -186,16 +186,20 @@ Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady
 Label(win, textvariable= str(outputname)).place(x=50, y=184)
 Label(win, textvariable= str(csvname)).place(x=700, y=40)
 
+#divider line
+seperator=ttk.Separator(win, orient='vertical')
+seperator.place(x=200,y=40,height=100)
+
 # Create buttons
-ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=50, y=40,height=40)
-ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=50, y=100,height=40)
-ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=200, y=40,height=40)
-ttk.Button(win, text= "Parameterize", command=parameterize).place(x=200, y=100,height=40)
+ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=30, y=40,height=40)
+ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=100,height=40)
+ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=40,height=40)
+ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=100,height=40)
 
 # Output window
 
 output = Text(win, state = 'disabled', width=80, height=41)
-output.place(x=50, y=204)
+output.place(x=30, y=204)
 
 
 
