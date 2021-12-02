@@ -88,7 +88,7 @@ def clear_output(event=None):
 # This is what happens when you click the CREATE TEST SET
 def create_set(event=None):
    if import_box2()==0:
-      outputname.set("Output: Creating test set:",filenameCSV)
+      outputname.set("Output: Creating test set")
       print('start create test set')
       output.configure(state='normal')
       output.delete(1.0, END)
