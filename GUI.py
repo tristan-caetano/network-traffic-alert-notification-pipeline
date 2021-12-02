@@ -194,7 +194,7 @@ ttk.Button(win, text= "Parameterize", command=parameterize).place(x=200, y=100,h
 
 # Output window
 
-output = Text(win, state = 'disabled', width=80, height=40)
+output = Text(win, state = 'disabled', width=80, height=41)
 output.place(x=50, y=204)
 
 
