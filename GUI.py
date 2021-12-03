@@ -15,125 +15,89 @@ import data_trimmer as dt
 import pandas as pd
 import parameterizer as pm
 
+#Initialize window and global variables
 win= Tk()
-
 outputname = StringVar()
 csvname = StringVar()
 outputname.set("Output:")
 csvname.set("CSV")
 
-# Resize window
+#Resize window
 win.geometry("1920x1080")
 win.title("Network Traffic Alert Notification Pipeline​ GUI")
 
-def import_box2(event=None):
-   global filenameCSV
-   filenameCSV = filedialog.askopenfilename()
-   filenameCSV = os.path.basename(filenameCSV)
-
-   # The if-statement and else-statement detects if the file is a CSV or not.
-   my_str = filenameCSV[-4:]
-   output.configure(state='normal')
-   if my_str == ".csv":
-      output.insert(tk.END, 'Selected CSV file: ')
-      output.insert(tk.END, filenameCSV)
-      output.insert(tk.END, '\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-      return 0
-   else:
-      output.insert(tk.END, 'File is not a CSV\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-      return 1
-
-# This is what happens when you click the GO button.
-def start(event=None):
-   global filename
-   filename = filedialog.askopenfilename()
-   filename = os.path.basename(filename)
-   output.configure(state='normal')
-   my_str = filename[-5:]
-   if my_str == ".pcap":
-      output.insert(tk.END, 'Selected PCAP: ')
-      output.insert(tk.END, filename)
-      outputname.set("Output: Converting PCAP to CSV...")
-      print('start conversion')
-      output.configure(state='normal')
-      output.delete(1.0, END)
-      output.insert(tk.END, 'Starting Conversion...\n')
-      output.see(tk.END)
-      print("eqefwfwefwe: ", filename)
-      output.configure(state='disabled')
-      curr_csv = cv.convert(output, filename)
-      print("dfsfdsfds: ", curr_csv)
-      show_csv(curr_csv)
-      outputname.set("Output:")
-      output.insert(tk.END, '\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-   else:
-      output.insert(tk.END, 'File is not a PCAP\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-   # Call the conversion script
-   
-#this is what happens when you click the clear button
+#clear output window
 def clear_output(event=None):
-   print('output clear event')
    output.configure(state='normal')
    output.delete(1.0, END)
    output.configure(state='disabled')
 
-# This is what happens when you click the CREATE TEST SET
+#CSV file importer
+def import_CSV(event=None):
+   global filenameCSV
+   filenameCSV = filedialog.askopenfilename()
+   filenameCSV = os.path.basename(filenameCSV)
+
+   #Detects if the file is a CSV or not
+   filetype = filenameCSV[-4:]
+   if filetype == ".csv":
+      gp.print(output, '\nSelected CSV file:')
+      gp.print(output, filenameCSV)
+      return 0
+   else:
+      gp.print(output, '\nFile is not a CSV')
+      return 1
+
+#Convert to PCAP
+def convert_pcap(event=None):
+   global filename
+   filename = filedialog.askopenfilename()
+   filename = os.path.basename(filename)
+   filetype = filename[-5:]
+   #Detects if the file is a PCAP or not.
+   if filetype == ".pcap":
+      outputname.set("Output: Converting PCAP to CSV...")
+      clear_output()
+      gp.print(output, '\nStarting Conversion...')
+      curr_csv = cv.convert(output, filename)
+      show_csv(curr_csv)
+      outputname.set("Output:")
+   else:
+      gp.print(output, '\nFile is not a PCAP')
+
+#Create test set
 def create_set(event=None):
-   if import_box2()==0:
+   if import_CSV()==0:
       outputname.set("Output: Creating test set")
-      print('start create test set')
-      output.configure(state='normal')
-      output.delete(1.0, END)
-      output.insert(tk.END, 'Creating Test Set...\n')
-      output.see(tk.END)
-      output.configure(state='disabled')
-      print("Running...: ", filenameCSV)
-      print(type(filenameCSV))
+      clear_output()
+      gp.print(output, '\nCreating Test Set...')
       curr_csv = cts.digest_file(filenameCSV, output)
       show_csv(curr_csv)
       outputname.set("Output:")
-      # Call the script using filenameCSV
 
-      # This is what happens when you click the Trim Data Set
+#Trim Data Set
 def trim_dataset(event=None):
-   if import_box2()==0:
+   if import_CSV()==0:
       outputname.set("Output: Trimming Data Set")
-      print('start create test set')
+      clear_output()
       gp.print(output, '\nTrimming Data Set...\n')
-      print("Running...: ", filenameCSV)
-      print(type(filenameCSV))
       curr_csv = dt.trim(filenameCSV, output)
       show_csv(curr_csv)
       outputname.set("Output:")
-      # Call the script using filenameCSV
 
-      # This is what happens when you click the Trim Data Set
+#Parameterize
 def parameterize(event=None):
-   if import_box2()==0:
+   if import_CSV()==0:
       outputname.set("Output: Parameterizing")
-      print('start create test set')
+      clear_output()
       gp.print(output, '\nParameterizing converted dataset...\n')
-      print("Running...: ", filenameCSV)
-      print(type(filenameCSV))
       curr_csv = pm.parameterize(filenameCSV, output)
       show_csv(curr_csv)
       outputname.set("Output:")
-      # Call the script using filenameCSV
 
 #CSV view
 def show_csv(csvfile):
    csvname.set("CSV: "+str(csvfile))
-   #global importflag
-   #if importflag==1:           yea dunno if this is needed
-   #   tree.destroy()
    TableMargin = Frame(win, width=16)
    TableMargin.place(x=700, y=60)
    scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
@@ -169,41 +133,29 @@ def show_csv(csvfile):
    tree.column('#11', stretch=NO, minwidth=0, width=100)
    tree.pack()
 
-   rows = []
-
    with open(csvfile) as f:
       reader = csv.reader(f, delimiter=',')
-      
-      # This works, buts its incredibly slow
       for row in reader:
-         print(row)           #use pandas to get each of these column names (just here tho everywhere else is ok)
          tree.insert("", 0, values=row)
 
-   importflag = 1
-
-# Create labels
+#Create labels and divider line
 Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady= 10)
 Label(win, text= "PCAP to CSV Pipeline").place(x=30, y=40)
 Label(win, text= "Test Set Pipeline").place(x=250, y=40)
 Label(win, textvariable= str(outputname)).place(x=30, y=184)
 Label(win, textvariable= str(csvname)).place(x=700, y=40)
-
-#divider line
 seperator=ttk.Separator(win, orient='vertical')
 seperator.place(x=210,y=44,height=120)
 
-# Create buttons
-ttk.Button(win, text= "Convert PCAP->CSV", command=start).place(x=30, y=70,height=40)
+#Create buttons
+ttk.Button(win, text= "Convert PCAP->CSV", command=convert_pcap).place(x=30, y=70,height=40)
 ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=120,height=40)
 ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=70,height=40)
 ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=120,height=40)
 
-# Output window
-
+#Output window
 output = Text(win, state = 'disabled', width=80, height=41)
 output.place(x=30, y=204)
 
-
-
-# start window
+#Start GUI
 win.mainloop()
