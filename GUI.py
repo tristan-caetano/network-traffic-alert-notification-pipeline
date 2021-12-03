@@ -80,7 +80,7 @@ def trim_dataset(event=None):
    if import_CSV()==0:
       outputname.set("Output: Trimming Data Set")
       clear_output()
-      gp.print(output, '\nTrimming Data Set...\n')
+      gp.print(output, '\nTrimming Data Set...')
       curr_csv = dt.trim(filenameCSV, output)
       show_csv(curr_csv)
       outputname.set("Output:")
@@ -90,7 +90,7 @@ def parameterize(event=None):
    if import_CSV()==0:
       outputname.set("Output: Parameterizing")
       clear_output()
-      gp.print(output, '\nParameterizing converted dataset...\n')
+      gp.print(output, '\nParameterizing converted dataset...')
       curr_csv = pm.parameterize(filenameCSV, output)
       show_csv(curr_csv)
       outputname.set("Output:")
