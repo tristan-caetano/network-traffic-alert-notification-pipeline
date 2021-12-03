@@ -105,7 +105,7 @@ def create_set(event=None):
       # This is what happens when you click the Trim Data Set
 def trim_dataset(event=None):
    if import_box2()==0:
-      outputname.set("Output: Trimming Data Set",filenameCSV)
+      outputname.set("Output: Trimming Data Set")
       print('start create test set')
       gp.print(output, '\nTrimming Data Set...\n')
       print("Running...: ", filenameCSV)
@@ -118,7 +118,7 @@ def trim_dataset(event=None):
       # This is what happens when you click the Trim Data Set
 def parameterize(event=None):
    if import_box2()==0:
-      outputname.set("Output: Parameterizing",filenameCSV)
+      outputname.set("Output: Parameterizing")
       print('start create test set')
       gp.print(output, '\nParameterizing converted dataset...\n')
       print("Running...: ", filenameCSV)
