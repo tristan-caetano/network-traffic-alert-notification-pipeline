@@ -6,6 +6,7 @@ import pcap_to_csv as cv
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
+from tkinter.messagebox import showinfo
 import os
 import os.path
 import threading
@@ -24,7 +25,7 @@ csvname.set("CSV")
 
 #Resize window
 win.geometry("1920x1080")
-win.title("Network Traffic Alert Notification Pipeline​ GUI")
+win.title("Network Traffic Alert Notification Pipeline​")
 
 #clear output window
 def clear_output(event=None):
@@ -95,6 +96,9 @@ def parameterize(event=None):
       show_csv(curr_csv)
       outputname.set("Output:")
 
+def show_help(event=None):
+   showinfo(title='Using the GUI', message="PCAP to CSV Pipeline:\n1. Click PCAP->CSV and select the PCAP file you wish to convert.\n2. Click Parameterize and select the converted CSV file to change all strings to integers.\n\nTest Set Pipeline:\n1. Click Trim Data Set and select the CSV file you wish to trim.\n2. Click CSV->Test Set and select the CSV file to create a test set. (must be parameterized)")
+
 #CSV view
 def show_csv(csvfile):
    csvname.set("CSV: "+str(csvfile))
@@ -152,6 +156,7 @@ ttk.Button(win, text= "Convert PCAP->CSV", command=convert_pcap).place(x=30, y=7
 ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=120,height=40)
 ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=70,height=40)
 ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=120,height=40)
+ttk.Button(win, text= "Help", command=show_help).place(x=30, y=5,height=25)
 
 #Output window
 output = Text(win, state = 'disabled', width=80, height=41)
