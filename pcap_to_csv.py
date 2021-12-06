@@ -1,5 +1,5 @@
 # Converts PCAP into CSV, with fields in correct order as specified in example CSV
-#not all fields possible but some
+# Not all fields possible but some
 import os 
 import pyshark
 from pyshark import tshark
