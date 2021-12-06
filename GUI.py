@@ -116,7 +116,7 @@ def show_help(event=None):
 def show_csv(csvfile):
    csvname.set("CSV: "+str(csvfile))
    TableMargin = Frame(win, width=16)
-   TableMargin.place(x=530, y=60)
+   TableMargin.place(x=600, y=60)
    scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
    scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
    tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst", "mal packet type", "is mal?"), height=41, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
@@ -160,7 +160,7 @@ Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady
 Label(win, text= "PCAP to CSV Pipeline").place(x=30, y=40)
 Label(win, text= "Test Set Pipeline").place(x=250, y=40)
 Label(win, textvariable= str(outputname)).place(x=30, y=184)
-Label(win, textvariable= str(csvname)).place(x=530, y=40)
+Label(win, textvariable= str(csvname)).place(x=600, y=40)
 seperator=ttk.Separator(win, orient='vertical')
 seperator.place(x=210,y=44,height=120)
 
@@ -172,7 +172,7 @@ ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=120,he
 ttk.Button(win, text= "Help", command=show_help).place(x=30, y=5,height=25)
 
 #Output window
-output = Text(win, state = 'disabled', width=80, height=55)
+output = Text(win, state = 'disabled', width=80, height=53)
 output.place(x=30, y=204)
 
 #Start GUI
