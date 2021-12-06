@@ -1,3 +1,17 @@
+# Network Traffic Alert Notification Pipeline Documentation Project MVP 
+# University of Massachusetts Dartmouth
+# Naval Undersea Warfare Center
+
+# Client: Benjamin Drozdenko
+# Team Lead: Tristan Caetano
+# Scrum Master: Jake Holme
+# Vinicius Coelho: Project Coordinator
+# Lead Developer: Jason Pinto
+# Developer: Tate DeTerra
+
+# Function that trims the UNSW dataset to match the columns from the PCAP to CSV converter
+
+#  ---------------  Libraries  ---------------
 import tkinter as tk
 import pandas as pd
 import GUI_print as gp
@@ -26,5 +40,3 @@ def trim(infile, output):
     gp.print(output, '\nTrimming Complete!\nOutput File: ' + outfile + "\n")
 
     return outfile
-
-#trim(None, "UNSW-NB15_1M.csv")

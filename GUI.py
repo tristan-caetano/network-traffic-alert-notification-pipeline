@@ -1,3 +1,16 @@
+# Network Traffic Alert Notification Pipeline Documentation Project MVP 
+# University of Massachusetts Dartmouth
+# Naval Undersea Warfare Center
+
+# Client: Benjamin Drozdenko
+# Team Lead: Tristan Caetano
+# Scrum Master: Jake Holme
+# Vinicius Coelho: Project Coordinator
+# Lead Developer: Jason Pinto
+# Developer: Tate DeTerra
+
+# Basic GUI for running the various functions, required for MVP presentation
+
 #  ---------------  Libraries  ---------------
 import tkinter as tk
 import create_test_set as cts

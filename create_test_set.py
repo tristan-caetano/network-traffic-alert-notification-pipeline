@@ -1,3 +1,16 @@
+# Network Traffic Alert Notification Pipeline Documentation Project MVP 
+# University of Massachusetts Dartmouth
+# Naval Undersea Warfare Center
+
+# Client: Benjamin Drozdenko
+# Team Lead: Tristan Caetano
+# Scrum Master: Jake Holme
+# Vinicius Coelho: Project Coordinator
+# Lead Developer: Jason Pinto
+# Developer: Tate DeTerra
+
+# Creates a truncated test set for eventual AI algorithm
+
 #  ---------------  Libraries  ---------------
 import csv
 import tkinter as tk
@@ -52,8 +65,6 @@ def digest_file(dataset, output):
         f.write(str(rows) + "\n")
     f.close()
 
-    #print('\nFile Created: list_of_rows.txt')
-
     return(make_test_file(dataset, output, mloc))
 
 # Creating CSV test set for Multilayer Perceptron
@@ -84,9 +95,6 @@ def make_test_file(dataset, output, mloc):
     # Pandas Import Original CSV
     p_dataset = pd.read_csv(dataset, low_memory = False)
 
-    # Creating a null value for the comparison
-    # null = p_dataset[p_dataset.columns[47]][0]
-
     # Prints number and names of unique values in malicious packet index
     unique_names = p_dataset[p_dataset.columns[mloc]].unique()
  
@@ -97,8 +105,6 @@ def make_test_file(dataset, output, mloc):
     # Declaring variables for trackig packet count and tracking written rows
     counter = 0
     a = 0
-
-    # print('\nSaving list of malware packets, please wait.')
 
     gp.print(output, '\nSaving list of malware packets, please wait.')
 
@@ -145,12 +151,12 @@ def make_test_file(dataset, output, mloc):
     gp.print(output, '\nSaving list of clean packets, please wait.')
 
     # For loop that gets at most 50 clean packets and saves to spreadsheet
-    for x in range(len(new_line)):
+    for x in range(len(p_dataset.index)):
         if int(p_dataset[p_dataset.columns[max_col - 1]][x]) == 0 and counter < 50:
-            print(int(p_dataset[p_dataset.columns[max_col - 1]][x])) 
-
+            
             for z in range(max_col):
-                temp_val = p_dataset[p_dataset.columns[z]][new_line[x]]
+                temp_val = p_dataset[p_dataset.columns[z]][x]
+                print(int(z)) 
                     
                 if z == 0 or z == 2:
                     temp_val = str(temp_val).replace(".", "")
@@ -171,6 +177,7 @@ def make_test_file(dataset, output, mloc):
                             temp_val = str(temp_val).replace(",", "")
                             temp_val = str(temp_val).replace("array", "")
                             
+                print(str(temp_val))            
                 sheet1.write(a, z, str(temp_val))
 
             a += 1
