@@ -1,4 +1,4 @@
-# Network Traffic Alert Notification Pipeline Documentation Project MVP 
+# Network Traffic Alert Notification Pipeline Project MVP 
 # University of Massachusetts Dartmouth
 # Naval Undersea Warfare Center
 
