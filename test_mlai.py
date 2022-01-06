@@ -5,7 +5,7 @@ from tensorflow.python.ops.gen_array_ops import shape
 # Checking version
 print(tf.__version__)
 
-# Creating Tensor
+# Creating Tensor.
 scalar = tf.constant(7)
 print(scalar)
 
