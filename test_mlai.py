@@ -46,5 +46,3 @@ random_1 = tf.random.Generator.from_seed(42)
 random_1 = random_1.normal(shape=(3,2))
 print(random_1)
 print(random_1.ndim)
-
-#cringe
