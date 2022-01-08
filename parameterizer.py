@@ -40,16 +40,32 @@ def parameterize(infile, output):
 
     # Declaring variables for tracking packet count and tracking written rows
     a = 0
+    b = 0
+    str_type = -1
 
     gp.print(output, '\nParameterizing dataset, please wait.')
         
     for x in range(len(p_dataset.index)):
+        b = 0
+        str_type = 0
         #for z in range(49):
         for z in range(max_col):
+            str_type = 0
             temp_val = p_dataset[p_dataset.columns[z]][x]
             
             if z == 0 or z == 2:
-                temp_val = str(temp_val).replace(".", "")
+                str_type = 1
+                #temp_val = str(temp_val).replace(".", "")
+                print("TempVal: ", str(temp_val))
+                try:
+                    temp_val = temp_val.split('.')
+                    for q in temp_val:
+                        print("IP: ", b)
+                        sheet1.write(a, b, str(q))
+                        b += 1
+                except AttributeError:
+                    print("Incorrect IP format")
+                    b += 4
 
             elif z == 4: #or z == 5 or z == 13 or z == 47:
                 parameterize = p_dataset[p_dataset.columns[z]].unique()
@@ -57,6 +73,7 @@ def parameterize(infile, output):
                 for w in parameterize:
                     if w == temp_val:
                         temp_val = np.where(parameterize == w)
+
                         # Removing remaining strings
                         temp_val = str(temp_val).replace("(", "")
                         temp_val = str(temp_val).replace(")", "")
@@ -64,8 +81,14 @@ def parameterize(infile, output):
                         temp_val = str(temp_val).replace("]", "")
                         temp_val = str(temp_val).replace(",", "")
                         temp_val = str(temp_val).replace("array", "")
-                    
-            sheet1.write(a, z, str(temp_val))
+            
+
+            if str_type == 0:
+                print("Reg: ", b)
+                print("Z: ", z)
+                print("A: ", a)
+                sheet1.write(a, b, str(temp_val))
+                b += 1
 
         a += 1
 
