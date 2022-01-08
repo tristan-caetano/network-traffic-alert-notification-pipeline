@@ -55,12 +55,9 @@ def parameterize(infile, output):
             
             if z == 0 or z == 2:
                 str_type = 1
-                #temp_val = str(temp_val).replace(".", "")
-                print("TempVal: ", str(temp_val))
                 try:
                     temp_val = temp_val.split('.')
                     for q in temp_val:
-                        print("IP: ", b)
                         sheet1.write(a, b, str(q))
                         b += 1
                 except AttributeError:
@@ -84,9 +81,6 @@ def parameterize(infile, output):
             
 
             if str_type == 0:
-                print("Reg: ", b)
-                print("Z: ", z)
-                print("A: ", a)
                 sheet1.write(a, b, str(temp_val))
                 b += 1
 
