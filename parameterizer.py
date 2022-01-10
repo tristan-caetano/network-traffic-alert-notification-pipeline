@@ -86,9 +86,6 @@ def parameterize(infile, output):
 
         a += 1
 
-    # Resetting Counter so the next loop is not skipped
-    counter = 0
-
     # Create new XLS and save values to it
     wb.save(test_set_file)
 

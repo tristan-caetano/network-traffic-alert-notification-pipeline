@@ -105,6 +105,8 @@ def make_test_file(dataset, output, mloc):
     # Declaring variables for trackig packet count and tracking written rows
     counter = 0
     a = 0
+    b = 0
+    str_type = -1
 
     gp.print(output, '\nSaving list of malware packets, please wait.')
 
@@ -113,13 +115,24 @@ def make_test_file(dataset, output, mloc):
         counter = 0
         
         for x in range(len(new_line)):
+            b = 0
+            str_type = 0
             if p_dataset[p_dataset.columns[mloc]][new_line[x]] == unique_names[y+1] and counter < maxMalAmt:
 
                 for z in range(max_col):
+                    str_type = 0
                     temp_val = p_dataset[p_dataset.columns[z]][new_line[x]]
                     
                     if z == 0 or z == 2:
-                        temp_val = str(temp_val).replace(".", "")
+                        str_type = 1
+                        try:
+                            temp_val = temp_val.split('.')
+                            for q in temp_val:
+                                sheet1.write(a, b, str(q))
+                                b += 1
+                        except AttributeError:
+                            print("Incorrect IP format")
+                            b += 4
 
                     elif z == 4 or z == 10: #or z == 5 or z == 13 or z == 47:
                         parameterize = p_dataset[p_dataset.columns[z]].unique()
@@ -135,7 +148,9 @@ def make_test_file(dataset, output, mloc):
                                 temp_val = str(temp_val).replace(",", "")
                                 temp_val = str(temp_val).replace("array", "")
                             
-                    sheet1.write(a, z, str(temp_val))
+                    if str_type == 0:
+                        sheet1.write(a, b, str(temp_val))
+                        b += 1
 
                 a += 1
                 counter += 1
@@ -152,15 +167,25 @@ def make_test_file(dataset, output, mloc):
 
     # For loop that gets at most 50 clean packets and saves to spreadsheet
     for x in range(len(p_dataset.index)):
+        b = 0
+        str_type = 0
         if int(p_dataset[p_dataset.columns[max_col - 1]][x]) == 0 and counter < 50:
             
             for z in range(max_col):
+                str_type = 0
                 temp_val = p_dataset[p_dataset.columns[z]][x]
                 print(int(z)) 
                     
                 if z == 0 or z == 2:
-                    temp_val = str(temp_val).replace(".", "")
-
+                    str_type = 1
+                    try:
+                        temp_val = temp_val.split('.')
+                        for q in temp_val:
+                            sheet1.write(a, b, str(q))
+                            b += 1
+                    except AttributeError:
+                        print("Incorrect IP format")
+                        b += 4
                 elif z == 4 or z == 10: #or z == 5 or z == 13 or z == 47:
                     parameterize = p_dataset[p_dataset.columns[z]].unique()
                         
@@ -177,8 +202,9 @@ def make_test_file(dataset, output, mloc):
                             temp_val = str(temp_val).replace(",", "")
                             temp_val = str(temp_val).replace("array", "")
                             
-                print(str(temp_val))            
-                sheet1.write(a, z, str(temp_val))
+                if str_type == 0:
+                    sheet1.write(a, b, str(temp_val))
+                    b += 1
 
             a += 1
             counter += 1
