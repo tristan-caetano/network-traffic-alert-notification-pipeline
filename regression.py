@@ -26,7 +26,8 @@ model_2 = tf.keras.Sequential([
   tf.keras.layers.Dense(10000),
   tf.keras.layers.Dense(1000), # add an extra layer
   tf.keras.layers.Dense(100),
-  tf.keras.layers.Dense(10)
+  tf.keras.layers.Dense(10),
+  tf.keras.layers.Dense(1)
 ])
 
 # 2. Compile the model
