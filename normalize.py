@@ -13,7 +13,11 @@
 
 #  ---------------  Libraries  ---------------
 import tkinter as tk
+import numpy as np
 import pandas as pd
+import xlwt 
+from pandas.core.arrays.sparse import dtype
+from xlwt import Workbook
 import GUI_print as gp
 import tensorflow as tf
 from tensorflow.python.ops.gen_array_ops import shape
@@ -22,10 +26,22 @@ from tensorflow.python.ops.gen_array_ops import shape
 def normalize(infile, output):
     gp.print(output, '\nNormalizing dataset, please wait.')
 
+    #print('\nOpening original dataset, please wait.')
+    gp.print(output, '\nOpening converted dataset, please wait.')
+
     # Pandas Import Original CSV
     p_dataset = pd.read_csv(infile, low_memory = False)
+ 
+    # Creating workbook to save test set until its written to a csv
+    wb = Workbook() 
+    sheet1 = wb.add_sheet('Sheet 1') 
 
+    # Declaring variables for tracking CSV reader
+    a=0
+    b=0
+    #whatever else
 
+    gp.print(output, '\nParameterizing dataset, please wait.')
 
 
     #need to normalize csv here, remove periods in IPs etc...
