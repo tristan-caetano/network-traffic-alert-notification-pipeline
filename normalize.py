@@ -46,7 +46,7 @@ def normalize(infile, output):
 
     #need to normalize csv here, remove periods in IPs etc...
 
-
+    # this is a test git change
 
 
     # Create tensor from csv data UNFINISHED
