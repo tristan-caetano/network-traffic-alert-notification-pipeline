@@ -14,6 +14,7 @@
 #  ---------------  Libraries  ---------------
 import tkinter as tk
 import create_test_set as cts
+import normalize as nrm
 from parameterizer import parameterize
 import pcap_to_csv as cv
 from tkinter import *
@@ -89,6 +90,16 @@ def create_set(event=None):
       show_csv(curr_csv)
       outputname.set("Output:")
 
+#Normalize test set
+def normalize(event=None):
+   if import_CSV()==0:
+      outputname.set("Output: Normalizing test set")
+      clear_output()
+      gp.print(output, '\nNormalizing Test Set...')
+      curr_csv = nrm.digest_file(filenameCSV, output)
+      show_csv(curr_csv)
+      outputname.set("Output:")
+
 #Trim Data Set
 def trim_dataset(event=None):
    if import_CSV()==0:
@@ -110,7 +121,7 @@ def parameterize(event=None):
       outputname.set("Output:")
 
 def show_help(event=None):
-   showinfo(title='Using the GUI', message="PCAP to CSV Pipeline:\n1. Click PCAP->CSV and select the PCAP file you wish to convert.\n2. Click Parameterize and select the converted CSV file to change all strings to integers.\n\nTest Set Pipeline:\n1. Click Trim Data Set and select the CSV file you wish to trim.\n2. Click CSV->Test Set and select the CSV file to create a test set. (must be parameterized)")
+   showinfo(title='Using the GUI', message="PCAP to CSV Pipeline:\n1. Click PCAP->CSV and select the PCAP file you wish to convert.\n2. Click Parameterize and select the converted CSV file to change all strings to integers.\n\nTest Set Pipeline:\n1. Click Trim Data Set and select the CSV file you wish to trim.\n2. Click CSV->Test Set and select the CSV file to create a test set. (must be parameterized)\n3. Click Normalize to remove periods and other miscellaneous info from the test set for the AI algorithm.")
 
 #CSV view
 def show_csv(csvfile):
@@ -159,21 +170,22 @@ def show_csv(csvfile):
 Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady= 10)
 Label(win, text= "PCAP to CSV Pipeline").place(x=30, y=40)
 Label(win, text= "Test Set Pipeline").place(x=250, y=40)
-Label(win, textvariable= str(outputname)).place(x=30, y=184)
+Label(win, textvariable= str(outputname)).place(x=30, y=234)
 Label(win, textvariable= str(csvname)).place(x=600, y=40)
 seperator=ttk.Separator(win, orient='vertical')
-seperator.place(x=210,y=44,height=120)
+seperator.place(x=210,y=44,height=170)
 
 #Create buttons
 ttk.Button(win, text= "Convert PCAP->CSV", command=convert_pcap).place(x=30, y=70,height=40)
 ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=120,height=40)
 ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=70,height=40)
 ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=120,height=40)
+ttk.Button(win, text= "Normalize Test Set", command=normalize).place(x=250, y=170,height=40)
 ttk.Button(win, text= "Help", command=show_help).place(x=30, y=5,height=25)
 
 #Output window
 output = Text(win, state = 'disabled', width=80, height=53)
-output.place(x=30, y=204)
+output.place(x=30, y=254)
 
 #Start GUI
 win.mainloop()

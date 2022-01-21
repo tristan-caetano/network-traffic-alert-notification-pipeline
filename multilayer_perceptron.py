@@ -26,7 +26,7 @@ from sklearn.metrics import accuracy_score
 
 
 #  ---------------  Data set   ---------------
-file = 'perceptron_test_set.csv'
+file = 'n_p_dataset.csv'
 Data_set = pd.read_csv(file)
 Data_set.head()
 
