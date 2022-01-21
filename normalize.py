@@ -28,23 +28,16 @@ def digest_file(infile, output):
     # Pandas Import CSV
     p_dataset = pd.read_csv(infile, low_memory=False)
 
-    # Creating dataset from CSV data
-    dataframe = pd.DataFrame(p_dataset)
-    datalist = dataframe.values.tolist() # this MIGHT work, did not get to test because VScode broken
-
-    # Normalize CSV
     gp.print(output, '\nNormalizing dataset, please wait.')
 
-    #for x in datalist:
-        #normalizedlist = preprocessing.normalize(datalist[x])  <-- need to make list for normalized values to be stored in, then make csv file from normalized values
-                                                                # used this as resource for normalization https://www.educative.io/edpresso/data-normalization-in-python
+    # Min Max Normalization
+    t_df = p_dataset.values
+    min_max_scaler = preprocessing.MinMaxScaler()
+    t_df_scaled = min_max_scaler.fit_transform(t_df)
+    n_df = pd.DataFrame(t_df_scaled)
 
+    # Save new normalized CSV file
+    n_df.to_csv("n_p_dataset.csv", index=False)
 
-
-    # Create tensor from csv data (NOT YET! this script is just for normalizing right now, use this code either after normalizing or in another script)
-    # tensor = tf.constant([
-    #     [[1,2,3],[4,5,6]],
-    #     [[7,8,9],[10,11,12]],
-    #     [[13,14,15], [16,17,18]]])
-    # print(tensor)
-    # print(tensor.ndim)
+    # Returning name of csv file
+    return "n_p_dataset.csv"
