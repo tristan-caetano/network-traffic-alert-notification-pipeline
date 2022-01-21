@@ -13,47 +13,34 @@
 
 #  ---------------  Libraries  ---------------
 import tkinter as tk
-import numpy as np
 import pandas as pd
-import xlwt 
-from pandas.core.arrays.sparse import dtype
-from xlwt import Workbook
 import GUI_print as gp
-import tensorflow as tf
-from tensorflow.python.ops.gen_array_ops import shape
+# import tensorflow as tf
+# from tensorflow.python.ops.gen_array_ops import shape
 
 # Creating CSV test set for Multilayer Perceptron
-def normalize(infile, output):
+def digest_file(infile, output):
+
+    gp.print(output, '\nOpening test set, please wait.')
+
+    # Pandas Import CSV
+    p_dataset = pd.read_csv(infile, low_memory=False)
+
+    # Creating dataset from CSV data
+    dataframe = pd.DataFrame(p_dataset)
+
+
+    # Normalize CSV
     gp.print(output, '\nNormalizing dataset, please wait.')
 
-    #print('\nOpening original dataset, please wait.')
-    gp.print(output, '\nOpening converted dataset, please wait.')
-
-    # Pandas Import Original CSV
-    p_dataset = pd.read_csv(infile, low_memory = False)
- 
-    # Creating workbook to save test set until its written to a csv
-    wb = Workbook() 
-    sheet1 = wb.add_sheet('Sheet 1') 
-
-    # Declaring variables for tracking CSV reader
-    a=0
-    b=0
-    #whatever else
-
-    gp.print(output, '\nParameterizing dataset, please wait.')
+    #LIST = read_csv['top entry'].tolist()    <---   probably not the best way to do that, need to get all CSV columns into lists, then normalize with this https://www.educative.io/edpresso/data-normalization-in-python
 
 
-    #need to normalize csv here, remove periods in IPs etc...
 
-    # this is a test git change
-    # Second git test change
-
-
-    # Create tensor from csv data UNFINISHED
-    tensor = tf.constant([
-        [[1,2,3],[4,5,6]],
-        [[7,8,9],[10,11,12]],
-        [[13,14,15], [16,17,18]]])
-    print(tensor)
-    print(tensor.ndim)
+    # Create tensor from csv data (NOT YET! this script is just for normalizing right now, use this code either after normalizing or in another script)
+    # tensor = tf.constant([
+    #     [[1,2,3],[4,5,6]],
+    #     [[7,8,9],[10,11,12]],
+    #     [[13,14,15], [16,17,18]]])
+    # print(tensor)
+    # print(tensor.ndim)
