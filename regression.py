@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_circles
 
+dataset = "n_p_dataset.csv"
+p_dataset = pd.read_csv(dataset, low_memory=False)
+
 # Make 1000 examples
 n_samples = 1000
 
@@ -11,6 +14,8 @@ n_samples = 1000
 X, y = make_circles(n_samples, 
                     noise=0.03, 
                     random_state=42)
+
+print(y)
 
 circles = pd.DataFrame({"X0":X[:, 0], "X1":X[:, 1], "label":y})
 circles.head()
