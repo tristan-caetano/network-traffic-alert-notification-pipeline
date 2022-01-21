@@ -15,6 +15,8 @@
 import tkinter as tk
 import pandas as pd
 import GUI_print as gp
+from sklearn import preprocessing
+import numpy as np
 # import tensorflow as tf
 # from tensorflow.python.ops.gen_array_ops import shape
 
@@ -28,12 +30,14 @@ def digest_file(infile, output):
 
     # Creating dataset from CSV data
     dataframe = pd.DataFrame(p_dataset)
-
+    datalist = dataframe.values.tolist() # this MIGHT work, did not get to test because VScode broken
 
     # Normalize CSV
     gp.print(output, '\nNormalizing dataset, please wait.')
 
-    #LIST = read_csv['top entry'].tolist()    <---   probably not the best way to do that, need to get all CSV columns into lists, then normalize with this https://www.educative.io/edpresso/data-normalization-in-python
+    #for x in datalist:
+        #normalizedlist = preprocessing.normalize(datalist[x])  <-- need to make list for normalized values to be stored in, then make csv file from normalized values
+                                                                # used this as resource for normalization https://www.educative.io/edpresso/data-normalization-in-python
 
 
 
