@@ -11,8 +11,6 @@
 
 # Basic GUI for running the various functions, required for MVP presentation
 
-#test edit to GUI.py
-
 #  ---------------  Libraries  ---------------
 import tkinter as tk
 import create_test_set as cts
