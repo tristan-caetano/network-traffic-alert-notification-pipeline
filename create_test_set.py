@@ -71,7 +71,7 @@ def digest_file(dataset, output):
 def make_test_file(dataset, output, mloc):
 
     # Max amount of packets per malicious type for test set
-    maxMalAmt = 70 
+    maxMalAmt = 500
 
     # Name of output file
     test_set_file = 'perceptron_test_set.xls'
@@ -165,11 +165,11 @@ def make_test_file(dataset, output, mloc):
 
     gp.print(output, '\nSaving list of clean packets, please wait.')
 
-    # For loop that gets at most 50 clean packets and saves to spreadsheet
+    # For loop that gets at most 1000 clean packets and saves to spreadsheet
     for x in range(len(p_dataset.index)):
         b = 0
         str_type = 0
-        if int(p_dataset[p_dataset.columns[max_col - 1]][x]) == 0 and counter < 50:
+        if int(p_dataset[p_dataset.columns[max_col - 1]][x]) == 0 and counter < 1000:
             
             for z in range(max_col):
                 str_type = 0
@@ -209,7 +209,7 @@ def make_test_file(dataset, output, mloc):
             a += 1
             counter += 1
 
-        elif(counter > 49):
+        elif(counter > 999):
             break
 
     # Create new XLS and save values to it
@@ -221,7 +221,7 @@ def make_test_file(dataset, output, mloc):
     read_file = pd.read_excel (r'perceptron_test_set.xls', sheet_name='Sheet 1')
     read_file.to_csv (r'perceptron_test_set.csv', index = None, header=True)
 
-    gp.print(output, ('\nFile Created: ' + test_set_file))
+    gp.print(output, ('\nFile Created: perceptron_test_set.csv'))
 
     return "perceptron_test_set.csv"
 
