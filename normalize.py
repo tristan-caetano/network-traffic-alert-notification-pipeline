@@ -12,6 +12,7 @@
 # Data Normalizer
 
 #  ---------------  Libraries  ---------------
+from hmac import digest
 import tkinter as tk
 import pandas as pd
 import GUI_print as gp
@@ -22,6 +23,8 @@ import numpy as np
 
 # Creating CSV test set for Multilayer Perceptron
 def digest_file(infile, output):
+
+    outfile_name = "n_p_dataset.csv"
 
     gp.print(output, '\nOpening test set, please wait.')
 
@@ -37,7 +40,9 @@ def digest_file(infile, output):
     n_df = pd.DataFrame(t_df_scaled)
 
     # Save new normalized CSV file
-    n_df.to_csv("n_p_dataset.csv", index=False)
+    n_df.to_csv(outfile_name, index=False)
 
     # Returning name of csv file
-    return "n_p_dataset.csv"
+    return outfile_name
+
+#digest_file("p_converted.csv", output)
