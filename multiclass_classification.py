@@ -13,16 +13,21 @@
 
 #  ---------------  Libraries  ---------------
 
+# garbage collection library?? 
 from gc import callbacks
+
 import tensorflow as tf
+from tensorflow import keras
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
+
 #  ---------------  Start of Algorithm  ---------------
 
-# This function will build the model.
+# This function builds thd model.
 def build_model():
 
     # Set random seed
@@ -49,14 +54,14 @@ def build_model():
 # This function will determine the types of malware packages. 
 def determine_mal_packets(dataset):
     
-    # Converting dataset to dataframe
+    # Reads the CSV file.
     p_dataset = pd.read_csv(dataset, low_memory=False)
 
-    # Saving binary classification column to variable
+    # Saving binary classification column to variable.
     class_df = p_dataset['16']
-    print(class_df)
+    # print(class_df)
 
-    # Removing classification from testing dataset
+    # Removing classifications from testing dataset.
     p_dataset = p_dataset.drop(['0','1','2','3','5','6','7','8','16','17'], axis=1)
     # p_dataset = p_dataset.drop(['16'], axis=1)
 
@@ -67,12 +72,27 @@ def determine_mal_packets(dataset):
     
     model_2.fit(p_dataset, class_df, epochs=100, validation_data=(p_dataset, class_df), callbacks = lr_scheduler)
 
-    # Printing model summary
-    model_2.summary()
+    # Printing the model summary.
+    # model_2.summary()
+
+    #  ---------------  Saved Model  ---------------
+
+    # Will save the entire model to a HDF5 file.
+    # The '.h5' extension indicates that the model should be saved to HDF5.
+    model_2.save('my_model.h5')
+
+    # Recreate the exact same model, including its weights and the optimizer
+    new_model = tf.keras.models.load_model('my_model.h5')
+
+    # Prints the new model summary.
+    new_model.summary()
+    # Summary isn't diffrent from thw model_2.summary()
+
+    #  ---------------  Saved Model  ---------------
 
 
 # Helps try to make an prediction
-    #model_2.predict()
+    # model_2.predict()
 
-# Calling func for testing
+# Calling function to test.
 determine_mal_packets("n_p_dataset.csv")
