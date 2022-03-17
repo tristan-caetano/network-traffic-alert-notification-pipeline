@@ -14,6 +14,7 @@
 #  ---------------  Libraries  ---------------
 
 # garbage collection library?? 
+from cgi import test
 from gc import callbacks
 
 import tensorflow as tf
@@ -35,34 +36,61 @@ def build_model():
 
     # 1. Create the model (same as model_1 but with an extra layer)
     model_2 = tf.keras.Sequential([
-        # tf.keras.layers.Dense(1000, activation=None),  # add an extra layer
-        # tf.keras.layers.Dense(100),
-        # tf.keras.layers.Dense(10),
-        # tf.keras.layers.Dense(1)
         
-        tf.keras.layers.Dense(10, input_dim = 8, activation="relu"),
-        tf.keras.layers.Dense(10, activation="relu"),
-        tf.keras.layers.Dense(10, activation="relu"),
-        tf.keras.layers.Dense(9, activation="softmax") # output shape is 10, activation is softmax
+        # tf.keras.layers.Conv2D(100, kernel_size = 3, input_dim = 7, activation="relu"),
+        # tf.keras.layers.Conv2D(1000,kernel_size = 3, activation="relu"),
+        # tf.keras.layers.Conv2D(1000, kernel_size = 3, activation="relu"),
+        # tf.keras.layers.Conv2D(10, kernel_size = 3, activation="softmax") # output shape is 10, activation is softmax
+
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu', input_dim = 7),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+
+        tf.keras.layers.Flatten(),
+    
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(10, activation='softmax')
     ])
 
     # 2. Compile the model
-    model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .001), metrics=['accuracy'])
+    model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .01), metrics=['accuracy'])
     return model_2
 
 
 # This function will determine the types of malware packages. 
-def determine_mal_packets(dataset):
+def determine_mal_packets(training_set, validation_set, testing_set):
     
     # Reads the CSV file.
-    p_dataset = pd.read_csv(dataset, low_memory=False)
+    p_dataset = pd.read_csv(training_set, low_memory=False)
+    v_p_dataset = pd.read_csv(validation_set, low_memory=False)
+    test_p_dataset = pd.read_csv(testing_set, low_memory=False)
 
     # Saving binary classification column to variable.
-    class_df = p_dataset['16']
+    class_df = p_dataset['7']
+    vclass_df = v_p_dataset['7']
     # print(class_df)
 
     # Removing classifications from testing dataset.
-    p_dataset = p_dataset.drop(['0','1','2','3','5','6','7','8','16','17'], axis=1)
+    p_dataset = p_dataset.drop(['7','8'], axis=1)
+    v_p_dataset = v_p_dataset.drop(['7','8'], axis=1)
+    test_p_dataset = test_p_dataset.drop(['7','8'], axis=1)
     # p_dataset = p_dataset.drop(['16'], axis=1)
 
     model_2 = build_model()
@@ -70,7 +98,7 @@ def determine_mal_packets(dataset):
     # Create the learning rate callback
     lr_scheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-3 * 10**(epoch/20))
     
-    model_2.fit(p_dataset, class_df, epochs=100, validation_data=(p_dataset, class_df), callbacks = lr_scheduler)
+    model_2.fit(p_dataset, class_df, epochs=1000, validation_data=(v_p_dataset, vclass_df), callbacks = lr_scheduler)
 
     # Printing the model summary.
     # model_2.summary()
@@ -92,7 +120,7 @@ def determine_mal_packets(dataset):
 
 
 # Helps try to make an prediction
-    # model_2.predict()
+    model_2.predict(test_p_dataset)
 
 # Calling function to test.
-determine_mal_packets("n_p_dataset.csv")
+determine_mal_packets("n_n_training.csv", "n_n_validation.csv", "n_n_testing.csv")

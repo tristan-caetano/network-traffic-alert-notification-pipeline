@@ -37,6 +37,7 @@ def trim(infile, output):
     # Saving to file, and making sure an extraneous index isnt added
     new_ds.to_csv(outfile, index=False)
 
-    gp.print(output, '\nTrimming Complete!\nOutput File: ' + outfile + "\n")
+    #gp.print(output, '\nTrimming Complete!\nOutput File: ' + outfile + "\n")
 
     return outfile
+    
