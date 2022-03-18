@@ -27,6 +27,20 @@ def parameterize(infile):
 
     # Pandas Import Original CSV
     p_dataset = pd.read_csv(infile, low_memory = False, encoding= "utf-16")
+    # p_dataset = p_dataset.rename(columns=[
+    #             0: "srcip", 
+    #             1: "srcport",
+    #             2: "dstip",
+    #             3: "dstport",
+    #             4: "protocol",
+    #             5: "timerel", 
+    #             6: "tranbytes", 
+    #             7: "timetolive", 
+    #             8: "srctcp", 
+    #             9: "dsttcp", 
+    #             10: "malname", 
+    #             11: "ismal"])
+    # p_dataset = p_dataset.drop(["srcip", "dstip", "protocol"])
  
     # Creating workbook to save test set until its written to a csv
     wb = Workbook() 

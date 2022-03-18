@@ -21,7 +21,7 @@ def digest_file(infile):
     outfile_name = "n_" + infile
 
     # Pandas Import CSV
-    p_dataset = pd.read_csv(infile, low_memory=False)
+    p_dataset = pd.read_csv(infile, low_memory=False, encoding= "utf-16")
 
     # Min Max Normalization
     t_df = p_dataset.values
@@ -29,8 +29,18 @@ def digest_file(infile):
     t_df_scaled = min_max_scaler.fit_transform(t_df)
     n_df = pd.DataFrame(t_df_scaled)
 
+    n_df = n_df.rename(columns={
+                0: "srcport",
+                1: "dstport",
+                2: "timerel", 
+                3: "tranbytes", 
+                4: "timetolive", 
+                5: "srctcp", 
+                6: "dsttcp"})
+
     # Save new normalized CSV file
-    n_df.to_csv(outfile_name, index=False)
+    n_df.to_csv(outfile_name, index=True)
+    print(n_df)
 
     # Returning name of csv file
     return outfile_name
