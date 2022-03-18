@@ -12,14 +12,13 @@
 # Function that trims the UNSW dataset to match the columns from the PCAP to CSV converter
 
 #  ---------------  Libraries  ---------------
-import tkinter as tk
 import pandas as pd
 import GUI_print as gp
 
-def trim(infile, output):
+def trim(infile):
 
     # Name of output file
-    outfile = "testsnip.csv"
+    outfile = "snip_" + infile
 
     # Choosing what columns to keep from original dataset
     chosen_cols = [1, 2, 3, 4, 5, 7, 8, 10, 21, 35, 48, 49]

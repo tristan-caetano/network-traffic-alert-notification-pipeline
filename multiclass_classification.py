@@ -16,13 +16,9 @@
 # garbage collection library?? 
 from cgi import test
 from gc import callbacks
-
 import tensorflow as tf
 from tensorflow import keras
-
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 
 
@@ -37,31 +33,24 @@ def build_model():
     # 1. Create the model (same as model_1 but with an extra layer)
     model_2 = tf.keras.Sequential([
         
-        # tf.keras.layers.Conv2D(100, kernel_size = 3, input_dim = 7, activation="relu"),
-        # tf.keras.layers.Conv2D(1000,kernel_size = 3, activation="relu"),
-        # tf.keras.layers.Conv2D(1000, kernel_size = 3, activation="relu"),
-        # tf.keras.layers.Conv2D(10, kernel_size = 3, activation="softmax") # output shape is 10, activation is softmax
+        tf.keras.layers.Dense(10, input_dim = 7, activation="relu"),
+        # tf.keras.layers.Dense(9, activation="relu"),
+        # tf.keras.layers.Dense(9, activation="relu"),
+        # tf.keras.layers.Dense(9, activation="relu"),
+        # tf.keras.layers.Dense(10, activation="softmax") # output shape is 10, activation is softmax
 
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu', input_dim = 7),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        tf.keras.layers.Conv2D(32, kernel_size = (3,3), activation='relu'),
-        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        tf.keras.layers.MaxPooling1D((2)),
+        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        tf.keras.layers.MaxPooling1D((2)),
+        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        tf.keras.layers.MaxPooling1D((2)),
+        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        tf.keras.layers.MaxPooling1D((2)),
+        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        tf.keras.layers.MaxPooling1D((2)),
+        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        tf.keras.layers.MaxPooling1D((2)),
 
         tf.keras.layers.Flatten(),
     
@@ -70,7 +59,7 @@ def build_model():
     ])
 
     # 2. Compile the model
-    model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .01), metrics=['accuracy'])
+    model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .0001), metrics=['accuracy'])
     return model_2
 
 
@@ -84,13 +73,21 @@ def determine_mal_packets(training_set, validation_set, testing_set):
 
     # Saving binary classification column to variable.
     class_df = p_dataset['7']
+    print(class_df)
     vclass_df = v_p_dataset['7']
+    print(v_p_dataset)
     # print(class_df)
 
     # Removing classifications from testing dataset.
     p_dataset = p_dataset.drop(['7','8'], axis=1)
     v_p_dataset = v_p_dataset.drop(['7','8'], axis=1)
     test_p_dataset = test_p_dataset.drop(['7','8'], axis=1)
+
+    # p_reshape = tf.reshape(p_dataset, [2,20,2,10])
+    # v_p_reshape = tf.reshape(v_p_dataset, [2,20,2,10])
+    # test_reshape = tf.reshape(test_p_dataset, [2,20,2,10])
+
+    print(p_dataset.shape)
     # p_dataset = p_dataset.drop(['16'], axis=1)
 
     model_2 = build_model()
@@ -98,7 +95,7 @@ def determine_mal_packets(training_set, validation_set, testing_set):
     # Create the learning rate callback
     lr_scheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-3 * 10**(epoch/20))
     
-    model_2.fit(p_dataset, class_df, epochs=1000, validation_data=(v_p_dataset, vclass_df), callbacks = lr_scheduler)
+    model_2.fit(p_dataset, class_df, epochs=100, validation_data=(v_p_dataset, vclass_df), callbacks = lr_scheduler)
 
     # Printing the model summary.
     # model_2.summary()
@@ -119,8 +116,13 @@ def determine_mal_packets(training_set, validation_set, testing_set):
     #  ---------------  Saved Model  ---------------
 
 
-# Helps try to make an prediction
-    model_2.predict(test_p_dataset)
+    # Helps try to make an prediction
+    output = model_2.predict(test_p_dataset)
+
+    with open('predictions.txt','w') as notepad1:
+        print(*output, file=notepad1, sep='\n')
+
 
 # Calling function to test.
-determine_mal_packets("n_n_training.csv", "n_n_validation.csv", "n_n_testing.csv")
+# CSV files created from train_test_creator then normalized.
+# determine_mal_packets("n_n_training.csv", "n_n_validation.csv", "n_n_testing.csv")

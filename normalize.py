@@ -12,26 +12,16 @@
 # Data Normalizer
 
 #  ---------------  Libraries  ---------------
-from hmac import digest
-import tkinter as tk
 import pandas as pd
-import GUI_print as gp
 from sklearn import preprocessing
-import numpy as np
-# import tensorflow as tf
-# from tensorflow.python.ops.gen_array_ops import shape
 
 # Creating CSV test set for Multilayer Perceptron
-def digest_file(infile, output):
+def digest_file(infile):
 
-    outfile_name = "n_p_dataset.csv"
-
-    gp.print(output, '\nOpening test set, please wait.')
+    outfile_name = "n_" + infile
 
     # Pandas Import CSV
     p_dataset = pd.read_csv(infile, low_memory=False)
-
-    gp.print(output, '\nNormalizing dataset, please wait.')
 
     # Min Max Normalization
     t_df = p_dataset.values
@@ -45,4 +35,4 @@ def digest_file(infile, output):
     # Returning name of csv file
     return outfile_name
 
-#digest_file("p_converted.csv", output)
+# digest_file("n_n_testing.csv", 0)
