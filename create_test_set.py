@@ -109,7 +109,7 @@ def make_test_file(dataset, output, mloc):
     b = 0
     str_type = -1
 
-    gp.print(output, '\nSaving list of malware packets, please wait.')
+    #gp.print(output, '\nSaving list of malware packets, please wait.')
 
     # For loop that gets at most 50 of each type of malware and saves it to a spreadsheet
     for y in range(len(unique_names) - 1):
