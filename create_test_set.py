@@ -10,6 +10,7 @@
 # Developer: Tate DeTerra
 
 # Creates a truncated test set for eventual AI algorithm
+#========================================================-=-=-=-=-=-=-=*DELETE FILE IF NOT USED*=-=-=-=-=-=-=-==================================================================
 
 #  ---------------  Libraries  ---------------
 import csv
@@ -19,14 +20,14 @@ import pandas as pd
 import xlwt 
 from pandas.core.arrays.sparse import dtype
 from xlwt import Workbook
-import GUI_print as gp
+#import GUI_print as gp
 
 # Creating file that contains all the row number mal packets from the UNSW-NB15_1M.csv dataset 
 # THIS SHOULD ONLY HAVE TO BE RUN ONCE PER FILE
 def digest_file(dataset, output):
     
     # print('\nOpening original dataset, please wait.')
-    gp.print(output, '\nOpening original dataset, please wait.')
+    #gp.print(output, '\nOpening original dataset, please wait.')
 
     # Pandas Import CSV
     p_dataset = pd.read_csv(dataset, low_memory=False)
@@ -50,7 +51,7 @@ def digest_file(dataset, output):
     # Creating a null value for the comparison
     null = p_dataset[p_dataset.columns[mloc]][0]
 
-    gp.print(output, '\nIterating through entire dataset, this may take a bit.')
+    #gp.print(output, '\nIterating through entire dataset, this may take a bit.')
 
     # For loops that populate the respective arrays
     for x in range(len(p_dataset.index)):
@@ -90,7 +91,7 @@ def make_test_file(dataset, output, mloc):
         new_line.append(int(temp))
 
     #print('\nOpening original dataset, please wait.')
-    gp.print(output, '\nOpening original dataset, please wait.')
+    #gp.print(output, '\nOpening original dataset, please wait.')
 
     # Pandas Import Original CSV
     p_dataset = pd.read_csv(dataset, low_memory = False)
@@ -163,7 +164,7 @@ def make_test_file(dataset, output, mloc):
 
     #print('\nSaving list of clean packets, please wait.')
 
-    gp.print(output, '\nSaving list of clean packets, please wait.')
+    #gp.print(output, '\nSaving list of clean packets, please wait.')
 
     # For loop that gets at most 1000 clean packets and saves to spreadsheet
     for x in range(len(p_dataset.index)):
@@ -215,13 +216,13 @@ def make_test_file(dataset, output, mloc):
     # Create new XLS and save values to it
     wb.save(test_set_file)
 
-    gp.print(output, '\nFile Created: perceptron_test_set.xls\nConverting XLS to CSV')
+    #gp.print(output, '\nFile Created: perceptron_test_set.xls\nConverting XLS to CSV')
     
     # Converting XLS to CSV
     read_file = pd.read_excel (r'perceptron_test_set.xls', sheet_name='Sheet 1')
     read_file.to_csv (r'perceptron_test_set.csv', index = None, header=True)
 
-    gp.print(output, ('\nFile Created: perceptron_test_set.csv'))
+    #gp.print(output, ('\nFile Created: perceptron_test_set.csv'))
 
     return "perceptron_test_set.csv"
 

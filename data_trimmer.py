@@ -13,7 +13,6 @@
 
 #  ---------------  Libraries  ---------------
 import pandas as pd
-import GUI_print as gp
 
 def trim(infile):
 
