@@ -229,22 +229,23 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.label.setText("Analyzing "+basename)
                 self.label.setHidden(False)
                 self.progressBar.setHidden(False)
+                ptc.convert(importedfile)
 
-                self.label.setText("Oh yea its gonna do it...")
-                self.updateBar(20)
-                time.sleep(1)
+                # self.label.setText("Oh yea its gonna do it...")
+                # self.updateBar(20)
+                # time.sleep(1)
 
-                self.label.setText("Give it a sec...")
-                self.updateBar(40)
-                time.sleep(1)
+                # self.label.setText("Give it a sec...")
+                # self.updateBar(40)
+                # time.sleep(1)
 
-                self.label.setText("Here it comes.......")
-                self.updateBar(70)
-                time.sleep(1)
+                # self.label.setText("Here it comes.......")
+                # self.updateBar(70)
+                # time.sleep(1)
 
-                self.label.setText("HERE IT IS!!!!!!!!!")
-                self.updateBar(100)
-                time.sleep(1)
+                # self.label.setText("HERE IT IS!!!!!!!!!")
+                # self.updateBar(100)
+                # time.sleep(1)
 
                 #TRIGGERS AFTER PROCESS IS COMPLETE
                 self.progressBar.setHidden(True)
@@ -971,6 +972,10 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.anim.setDuration(120)
         self.anim.setEasingCurve(QtCore.QEasingCurve.OutCubic)
         self.anim.start()
+
+    def updateMessage(self, progress, message):
+        self.label.setText(message)
+        self.updateBar(progress)
 
 if __name__ == "__main__":
     import sys

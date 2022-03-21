@@ -16,12 +16,15 @@ import os
 import pyshark
 from pyshark import tshark
 import platform
+import GUI
 
 # Function that converts pcap to csv
 def convert(in_file):
 
   # Name of csv output file
   out_file = in_file + ".csv"
+
+  GUI.SettingsWindow.updateMessage(GUI.self, 10, "Getting parameters from PCAP file")
 
   # Run this command if on Linux
   if platform.system() == "Linux":
@@ -32,6 +35,8 @@ def convert(in_file):
   elif platform.system() == "Windows":
     temp_command = "powershell -file pcap_to_csv.ps1 -wInput "+in_file+" -wOutput "+out_file+""
     os.system(temp_command)
+  
+  GUI.SettingsWindow.updateMessage(GUI.self, 20, "Creating CSV file")
 
   # It should be noted through observation of the converter that the .pcap files
   # converted through Linux have a .csv output with utf-8 encoding, however, when 
