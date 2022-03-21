@@ -14,16 +14,19 @@
 #  ---------------  Libraries  ---------------
 import numpy as np
 import pandas as pd
+import GUI
 from pandas.core.arrays.sparse import dtype
 from xlwt import Workbook
 
 # Creating CSV test set for Multilayer Perceptron
-def parameterize(infile):
+def parameterize(infile, gui_self):
 
     # Name of output file
     test_set_file = 'p_converted.xls'
 
     max_col = 10
+
+    GUI.SettingsWindow.updateMessage(gui_self, 30, "Reading converted file.")
 
     # Pandas Import Original CSV
     p_dataset = pd.read_csv(infile, low_memory = False, encoding= "utf-16")
@@ -50,6 +53,8 @@ def parameterize(infile):
     a = 0
     b = 0
     str_type = -1
+
+    GUI.SettingsWindow.updateMessage(gui_self, 40, "Parameterizing values.")
         
     for x in range(len(p_dataset.index)):
         b = 0
@@ -95,6 +100,8 @@ def parameterize(infile):
     # Create new XLS and save values to it
     wb.save(test_set_file)
     
+    GUI.SettingsWindow.updateMessage(gui_self, 50, "Saving parameterized file.")
+
     # Converting XLS to CSV
     read_file = pd.read_excel (r'p_converted.xls', sheet_name='Sheet 1')
     read_file.to_csv (r'p_converted.csv', index = None, header=True)

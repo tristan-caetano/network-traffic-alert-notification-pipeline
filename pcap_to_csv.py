@@ -19,12 +19,12 @@ import platform
 import GUI
 
 # Function that converts pcap to csv
-def convert(in_file):
+def convert(in_file, gui_self):
 
   # Name of csv output file
   out_file = in_file + ".csv"
 
-  GUI.SettingsWindow.updateMessage(GUI.self, 10, "Getting parameters from PCAP file")
+  GUI.SettingsWindow.updateMessage(gui_self, 10, "Using Tshark on pcap file")
 
   # Run this command if on Linux
   if platform.system() == "Linux":
@@ -36,7 +36,7 @@ def convert(in_file):
     temp_command = "powershell -file pcap_to_csv.ps1 -wInput "+in_file+" -wOutput "+out_file+""
     os.system(temp_command)
   
-  GUI.SettingsWindow.updateMessage(GUI.self, 20, "Creating CSV file")
+  GUI.SettingsWindow.updateMessage(gui_self, 20, "Creating CSV file")
 
   # It should be noted through observation of the converter that the .pcap files
   # converted through Linux have a .csv output with utf-8 encoding, however, when 
@@ -57,3 +57,5 @@ def convert(in_file):
     # 10. TCP connection setup time, the time between the SYN_ACK and the ACK packets 35
 
   # Ignore Columns: 48, 49
+
+#convert("split.pcap", 0)

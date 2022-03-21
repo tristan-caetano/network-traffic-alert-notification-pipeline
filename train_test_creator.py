@@ -162,4 +162,4 @@ def create_data_sets(amt_of_each_mal, percentages):
 
 
 
-# determine_packet_allocation("testsnip.csv", 10000)
+#determine_packet_allocation("testsnip.csv", 10000)

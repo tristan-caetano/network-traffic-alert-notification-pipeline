@@ -38,4 +38,6 @@ def trim(infile):
     #gp.print(output, '\nTrimming Complete!\nOutput File: ' + outfile + "\n")
 
     return outfile
+
+#trim("UNSW-NB15_1.csv")
     

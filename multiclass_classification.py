@@ -34,28 +34,28 @@ def build_model():
     model_2 = tf.keras.Sequential([
         
         tf.keras.layers.Dense(10, input_dim = 7, activation="relu"),
-        # tf.keras.layers.Dense(9, activation="relu"),
-        # tf.keras.layers.Dense(9, activation="relu"),
-        # tf.keras.layers.Dense(9, activation="relu"),
-        # tf.keras.layers.Dense(10, activation="softmax") # output shape is 10, activation is softmax
+        tf.keras.layers.Dense(9, activation="relu"),
+        tf.keras.layers.Dense(9, activation="relu"),
+        tf.keras.layers.Dense(9, activation="relu"),
+        tf.keras.layers.Dense(10, activation="softmax") # output shape is 10, activation is softmax
 
-        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
-        tf.keras.layers.MaxPooling1D((2)),
-        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
-        tf.keras.layers.MaxPooling1D((2)),
-        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
-        tf.keras.layers.MaxPooling1D((2)),
-        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
-        tf.keras.layers.MaxPooling1D((2)),
-        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
-        tf.keras.layers.MaxPooling1D((2)),
-        tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
-        tf.keras.layers.MaxPooling1D((2)),
+        # tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        # tf.keras.layers.MaxPooling1D((2)),
+        # tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        # tf.keras.layers.MaxPooling1D((2)),
+        # tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        # tf.keras.layers.MaxPooling1D((2)),
+        # tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        # tf.keras.layers.MaxPooling1D((2)),
+        # tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        # tf.keras.layers.MaxPooling1D((2)),
+        # tf.keras.layers.Conv1D(32, kernel_size = (2), activation='relu'),
+        # tf.keras.layers.MaxPooling1D((2)),
 
-        tf.keras.layers.Flatten(),
+        # tf.keras.layers.Flatten(),
     
-        tf.keras.layers.Dense(64, activation='relu'),
-        tf.keras.layers.Dense(10, activation='softmax')
+        # tf.keras.layers.Dense(64, activation='relu'),
+        # tf.keras.layers.Dense(10, activation='softmax')
     ])
 
     # 2. Compile the model
@@ -125,4 +125,4 @@ def determine_mal_packets(training_set, validation_set, testing_set):
 
 # Calling function to test.
 # CSV files created from train_test_creator then normalized.
-# determine_mal_packets("n_n_training.csv", "n_n_validation.csv", "n_n_testing.csv")
+#determine_mal_packets("n_n_training.csv", "n_n_validation.csv", "n_n_testing.csv")

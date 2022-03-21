@@ -229,23 +229,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.label.setText("Analyzing "+basename)
                 self.label.setHidden(False)
                 self.progressBar.setHidden(False)
-                ptc.convert(importedfile)
 
-                # self.label.setText("Oh yea its gonna do it...")
-                # self.updateBar(20)
-                # time.sleep(1)
+                # Pcap to csv converter
+                converted_file = ptc.convert(basename, self)
 
-                # self.label.setText("Give it a sec...")
-                # self.updateBar(40)
-                # time.sleep(1)
+                # Parameterizer
+                # p_converted_file = param.parameterize(converted_file, self)
 
-                # self.label.setText("Here it comes.......")
-                # self.updateBar(70)
-                # time.sleep(1)
+                # Normalizer
+                n_converted_file = norm.digest_file(converted_file, self)
 
-                # self.label.setText("HERE IT IS!!!!!!!!!")
-                # self.updateBar(100)
-                # time.sleep(1)
+                SettingsWindow.updateMessage(self, 90, "Displaying normalized file.")
 
                 #TRIGGERS AFTER PROCESS IS COMPLETE
                 self.progressBar.setHidden(True)
@@ -258,7 +252,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                #self.showCSV(output)
+                self.showCSV(n_converted_file)
+
+                SettingsWindow.updateMessage(self, 100, "Complete.")
+
                 lock = False
             else:
                 print("NO FILE SELECTED, cannot start process")
@@ -974,8 +971,12 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.anim.start()
 
     def updateMessage(self, progress, message):
-        self.label.setText(message)
-        self.updateBar(progress)
+
+        # Self can be set to 0 for testing modules outside the GUI
+        if self != 0:
+            self.label.setText(message)
+            self.updateBar(progress)
+        else: return
 
 if __name__ == "__main__":
     import sys
