@@ -29,6 +29,7 @@ import multiclass_classification as multi
 
 #  ---------------  Global Variables  ---------------
 importedfile = ""
+
 settings = [1, 0, 1000, 0,
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -39,6 +40,7 @@ settings = [1, 0, 1000, 0,
 #                           [(number of neurons for all 10 layers)],
 #                           [(activation for all 10 layers)],
 #                           (learning rate), (optimizer)]                    all integers, 0-based
+
 lock = False
 
 #  ---------------  CSS Stylesheet  ---------------
@@ -229,17 +231,23 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.label.setText("Analyzing "+basename)
                 self.label.setHidden(False)
                 self.progressBar.setHidden(False)
+                ptc.convert(importedfile)
 
-                # Pcap to csv converter
-                converted_file = ptc.convert(basename, self)
+                # self.label.setText("Oh yea its gonna do it...")
+                # self.updateBar(20)
+                # time.sleep(1)
 
-                # Parameterizer
-                # p_converted_file = param.parameterize(converted_file, self)
+                # self.label.setText("Give it a sec...")
+                # self.updateBar(40)
+                # time.sleep(1)
 
-                # Normalizer
-                n_converted_file = norm.digest_file(converted_file, self)
+                # self.label.setText("Here it comes.......")
+                # self.updateBar(70)
+                # time.sleep(1)
 
-                SettingsWindow.updateMessage(self, 90, "Displaying normalized file.")
+                # self.label.setText("HERE IT IS!!!!!!!!!")
+                # self.updateBar(100)
+                # time.sleep(1)
 
                 #TRIGGERS AFTER PROCESS IS COMPLETE
                 self.progressBar.setHidden(True)
@@ -252,10 +260,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                self.showCSV(n_converted_file)
-
-                SettingsWindow.updateMessage(self, 100, "Complete.")
-
+                #self.showCSV(output)
                 lock = False
             else:
                 print("NO FILE SELECTED, cannot start process")
@@ -348,11 +353,14 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.setStyleSheet(style)
         fnt = QtGui.QFont('Georgia', 12)
         self.bHelp = QtWidgets.QPushButton(self)
-        self.bHelp.setGeometry(QtCore.QRect(660, 20, 120, 36))
+        self.bHelp.setGeometry(QtCore.QRect(680, 20, 100, 36))
         self.bHelp.setFont(fnt)
         self.bTrain = QtWidgets.QPushButton(self)
-        self.bTrain.setGeometry(QtCore.QRect(510, 20, 140, 72))
+        self.bTrain.setGeometry(QtCore.QRect(510, 60, 160, 36))
         self.bTrain.setFont(fnt)
+        self.bCreate = QtWidgets.QPushButton(self)
+        self.bCreate.setGeometry(QtCore.QRect(510, 20, 160, 36))
+        self.bCreate.setFont(fnt)
         self.layers = QtWidgets.QSpinBox(self)
         self.layers.setRange(1, 10)
         self.layers.setValue(settings[0])
@@ -843,7 +851,9 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(_translate("SettingsWindow", "Pipeline Settings"))
         self.bHelp.setText(_translate("SettingsWindow", "Help"))
         self.bHelp.clicked.connect(self.openHelp)
-        self.bTrain.setText(_translate("SettingsWindow", "Import New\nTraining Data"))
+        self.bCreate.setText(_translate("SettingsWindow", "Create Training Data"))
+        self.bCreate.clicked.connect(self.openFile0)
+        self.bTrain.setText(_translate("SettingsWindow", "Retrain Algorithm"))
         self.bTrain.clicked.connect(self.openFile)
         self.layers.valueChanged.connect(self.save0)
         self.type.currentIndexChanged.connect(self.saveTop)
@@ -887,15 +897,24 @@ class SettingsWindow(QtWidgets.QMainWindow):
         lock = False
 
     def openFile(self):
-        importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING data',directory=os.getcwd(), filter='CSV File (*.csv)')
-        importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING data',directory=os.getcwd(), filter='CSV File (*.csv)')
-        importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile1 = importedfile1[0]
         importedfile2 = importedfile2[0]
         importedfile3 = importedfile3[0]
         if os.path.isfile(importedfile1) & os.path.isfile(importedfile2) & os.path.isfile(importedfile3):
+            print("RETRAINING ALGORITHM")
+            #retraining algorithm FROM importedfile1 2 and 3
+        else:
+            print("No file(s) or invalid file(s) selected")
+    
+    def openFile0(self):
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select Training Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile0 = importedfile0[0]
+        if os.path.isfile(importedfile0):
             print("CREATING TRAINING DATA")
-            #CREATE TRAINING DATA FROM importedfile1 2 and 3
+            #CREATE TRAINING DATA from importedfile0
         else:
             print("No file(s) or invalid file(s) selected")
 
@@ -971,12 +990,8 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.anim.start()
 
     def updateMessage(self, progress, message):
-
-        # Self can be set to 0 for testing modules outside the GUI
-        if self != 0:
-            self.label.setText(message)
-            self.updateBar(progress)
-        else: return
+        self.label.setText(message)
+        self.updateBar(progress)
 
 if __name__ == "__main__":
     import sys
