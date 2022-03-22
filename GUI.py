@@ -231,7 +231,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.label.setText("Analyzing "+basename)
                 self.label.setHidden(False)
                 self.progressBar.setHidden(False)
-                ptc.convert(importedfile)
+
+                # PCAP to CSV converter
+                converted = ptc.convert(basename, self)
+
+                # Normalizer
+                n_converted = norm.digest_file(converted, self)
 
                 # self.label.setText("Oh yea its gonna do it...")
                 # self.updateBar(20)
@@ -260,7 +265,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                #self.showCSV(output)
+                self.showCSV(n_converted)
                 lock = False
             else:
                 print("NO FILE SELECTED, cannot start process")
@@ -910,7 +915,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
             print("No file(s) or invalid file(s) selected")
     
     def openFile0(self):
-        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select Training Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select unmodified dataset',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile0 = importedfile0[0]
         if os.path.isfile(importedfile0):
             print("CREATING TRAINING DATA")

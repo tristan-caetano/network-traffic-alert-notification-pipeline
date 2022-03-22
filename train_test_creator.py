@@ -18,6 +18,7 @@ import math
 # Creating file that contains all the row number mal packets from the UNSW-NB15_1M.csv dataset 
 # THIS SHOULD ONLY HAVE TO BE RUN ONCE PER FILE
 def determine_packet_allocation(dataset, num_of_packets):
+# 10000 packets
 
     # Getting amount of packets for each set (80%: 80% train / 20% validation)(20% testing)
     # training = math.floor((num_of_packets * 80) / 100)
