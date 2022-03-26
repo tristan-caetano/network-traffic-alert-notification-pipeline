@@ -54,10 +54,11 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     unique_names = np.delete(unique_names, 6)
     unique_names = np.delete(unique_names, 6)
     unique_names = np.delete(unique_names, 6)
+    unique_names = np.delete(unique_names, 6)
+    unique_names = np.delete(unique_names, 6)
     
     print(unique_names)
     
-
     # How many of each packet should be in the dataframe
     per_packet = math.floor(num_of_packets / len(unique_names))
 
@@ -76,48 +77,45 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     # Initializing index
     x = 0
 
-    for d in range(2,4):
+    print("Getting all mal packets")
+    # An while loop that fills amt_of_each_packets with the packets that are needed
+    while x < len(p_dataset):
 
-        # An while loop that fills amt_of_each_packets with the packets that are needed
-        while x < len(p_dataset):
+        # If the limit of packets of that type have been reached, or if the whole dataset has been checked through
+        if count == per_packet or x == (len(p_dataset) - 1):
 
-            # If the limit of packets of that type have been reached, or if the whole dataset has been checked through
-            if count == per_packet or x == (len(p_dataset) - 10):
+            print("Count: ", count, " Per Packet: ", per_packet, "Packet Type: ", unique_names[current_packet])
+            count = 0
+            amt_of_each_mal[current_packet] = temp_df
+            temp_df = pd.DataFrame(columns=[
+                "srcport",
+                "dstport",
+                "timerel", 
+                "tranbytes", 
+                "timetolive", 
+                "srctcp", 
+                "dsttcp", 
+                "malname", 
+                "ismal"])
+            current_packet += 1
+            x = 0         
+        
+        # Making sure we haven't already done all the packet types
+        if(current_packet <= len(unique_names) - 1):
+
+            # If the current row contains the packet type we are looking for, save it
+            # MIGHT NEED TO BE AN ELSE IF
+            if (str(unique_names[current_packet]) in str(p_dataset[p_dataset.columns[class_column]][x])) or (pd.isna(p_dataset[p_dataset.columns[class_column]][x]) and pd.isna(unique_names[current_packet])):
                 
-                count = 0
-                amt_of_each_mal[current_packet] = temp_df
-                temp_df = pd.DataFrame(columns=[
-                    "srcport",
-                    "dstport",
-                    "timerel", 
-                    "tranbytes", 
-                    "timetolive", 
-                    "srctcp", 
-                    "dsttcp", 
-                    "malname", 
-                    "ismal"])
-                current_packet += 1
-                x = 0         
-            
-            # Making sure we haven't already done all the packet types
-            if(current_packet <= len(unique_names) - 1):
+                if p_dataset[p_dataset.columns[5]][x] != p_dataset[p_dataset.columns[6]][x]:
+                    temp_df = temp_df.append(p_dataset.iloc[x])
+                    count += 1
 
-                # If the current row contains the packet type we are looking for, save it
-                if p_dataset[p_dataset.columns[class_column]][x] == unique_names[current_packet] or (pd.isna(p_dataset[p_dataset.columns[class_column]][x]) and pd.isna(unique_names[current_packet])):
-                    
-                    if p_dataset[p_dataset.columns[5]][x] != p_dataset[p_dataset.columns[6]][x]:
-                        print("Col5: ", p_dataset[p_dataset.columns[5]][x], "Col6: ", p_dataset[p_dataset.columns[6]][x], "STR: ", p_dataset[p_dataset.columns[1]][x])
-                        temp_df = temp_df.append(p_dataset.iloc[x])
-                        count += 1
-
-            # Forcing the loop to complete
-            else:
-                x = len(p_dataset) + 1
-            
-            # Incrementing index
-            x += 1
-
-        p_dataset = pd.read_csv("snip_UNSW-NB15_" + str(d) + ".csv", low_memory=False)
+        # Forcing the loop to complete
+        else: x = len(p_dataset) + 1
+        
+        # Incrementing index
+        x += 1
 
     
     print(amt_of_each_mal)
@@ -128,6 +126,8 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
 #
 def create_data_sets(amt_of_each_mal, percentages):
     
+    print("Splitting datasets")
+
     # 1: training 64%, 2: validation 16%, 3: testing 20%
     training_sets = [pd.DataFrame(columns=[
                 "srcport",
@@ -145,7 +145,6 @@ def create_data_sets(amt_of_each_mal, percentages):
     for z in range(len(amt_of_each_mal)):
 
         amt_per_df[z] = len(amt_of_each_mal[z])
-        print(amt_per_df[z])
 
     for a in range(len(training_sets)):
         print("SetL ", a)
@@ -153,7 +152,6 @@ def create_data_sets(amt_of_each_mal, percentages):
         for x in range(len(amt_of_each_mal)):
                 
             curr_amt = math.floor((amt_per_df[x] * percentages[a]) / 100)
-            print("Curr: ", curr_amt, "Curr_packet: ", x, "Endpt: ", (starting_points[x] + curr_amt))
                 
             for b in range(starting_points[x], (starting_points[x] + curr_amt)):
                 
@@ -164,4 +162,4 @@ def create_data_sets(amt_of_each_mal, percentages):
     training_sets[1].to_csv("validation.csv", index=False)
     training_sets[2].to_csv("testing.csv", index=False)
     
-determine_packet_allocation("snip_UNSW-NB15_1.csv", 400000, 7)
+#determine_packet_allocation("snip_UNSW-NB15_com.csv", 18000, 7)

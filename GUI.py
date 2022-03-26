@@ -20,11 +20,11 @@ import csv
 
 #  --------------- Components  ---------------
 import pcap_to_csv as ptc
-import train_test_creator as ttc
-import normalize as norm
-import data_trimmer as dt
-import parameterizer as param
-import parameterize_mal as pmal
+# import train_test_creator as ttc
+# import normalize as norm
+# import data_trimmer as dt
+# import parameterizer as param
+# import parameterize_mal as pmal
 import multiclass_classification as multi
 
 #  ---------------  Global Variables  ---------------
@@ -234,25 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 # PCAP to CSV converter
                 converted = ptc.convert(basename, self)
-
-                # Normalizer
-                n_converted = norm.digest_file(converted, self)
-
-                # self.label.setText("Oh yea its gonna do it...")
-                # self.updateBar(20)
-                # time.sleep(1)
-
-                # self.label.setText("Give it a sec...")
-                # self.updateBar(40)
-                # time.sleep(1)
-
-                # self.label.setText("Here it comes.......")
-                # self.updateBar(70)
-                # time.sleep(1)
-
-                # self.label.setText("HERE IT IS!!!!!!!!!")
-                # self.updateBar(100)
-                # time.sleep(1)
+                predicted = multi.saved_weights(converted, self)
 
                 #TRIGGERS AFTER PROCESS IS COMPLETE
                 self.progressBar.setHidden(True)
@@ -265,7 +247,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                self.showCSV(n_converted)
+                SettingsWindow.updateMessage(self, 100, "Displaying CSV in GUI")
+                self.showCSV(predicted)
                 lock = False
             else:
                 print("NO FILE SELECTED, cannot start process")
