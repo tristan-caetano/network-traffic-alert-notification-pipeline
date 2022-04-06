@@ -49,7 +49,6 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     # Prints number and names of unique values in malicious packet index
     unique_names = p_dataset[p_dataset.columns[class_column]].unique()
 
-    print(type(unique_names))
     unique_names = np.delete(unique_names, 5)
     unique_names = np.delete(unique_names, 6)
     unique_names = np.delete(unique_names, 6)
@@ -97,8 +96,11 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
                 "dsttcp", 
                 "malname", 
                 "ismal"])
+
             current_packet += 1
             x = 0         
+
+        unjunk = [5,6]
         
         # Making sure we haven't already done all the packet types
         if(current_packet <= len(unique_names) - 1):
@@ -107,7 +109,7 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
             # MIGHT NEED TO BE AN ELSE IF
             if (str(unique_names[current_packet]) in str(p_dataset[p_dataset.columns[class_column]][x])) or (pd.isna(p_dataset[p_dataset.columns[class_column]][x]) and pd.isna(unique_names[current_packet])):
                 
-                if p_dataset[p_dataset.columns[5]][x] != p_dataset[p_dataset.columns[6]][x]:
+                if p_dataset[p_dataset.columns[unjunk[0]]][x] != p_dataset[p_dataset.columns[unjunk[1]]][x]:
                     temp_df = temp_df.append(p_dataset.iloc[x])
                     count += 1
 
@@ -139,6 +141,7 @@ def create_data_sets(amt_of_each_mal, percentages):
                 "dsttcp", 
                 "malname", 
                 "ismal"])] * 3
+    
     amt_per_df = [0] * len(amt_of_each_mal)
     starting_points = [0] * len(amt_of_each_mal)
 
@@ -162,4 +165,4 @@ def create_data_sets(amt_of_each_mal, percentages):
     training_sets[1].to_csv("validation.csv", index=False)
     training_sets[2].to_csv("testing.csv", index=False)
     
-#determine_packet_allocation("snip_UNSW-NB15_com.csv", 18000, 7)
+determine_packet_allocation("snip_UNSW-NB15_com.csv", 18000, 7)
