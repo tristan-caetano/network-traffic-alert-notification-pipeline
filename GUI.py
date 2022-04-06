@@ -17,6 +17,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import math
 import csv
+import h5py
+import configparser
 
 #  --------------- Components  ---------------
 import pcap_to_csv as ptc
@@ -29,15 +31,19 @@ import multiclass_classification as multi
 
 #  ---------------  Global Variables  ---------------
 importedfile = ""
-
+importedmodel = ""
 settings = 0
-# SETTINGS VARIABLE GUIDE:  [(number of layers), (type), (epoch number), (first layer input size),
-#                           [(layer type for all 10 layers)],
-#                           [(number of neurons for all 10 layers)],
-#                           [(activation for all 10 layers)],
-#                           (learning rate), (optimizer)]                    all integers, 0-based
-
 lock = False
+
+#  ---------------  User Config  ---------------
+config = configparser.ConfigParser()
+#If config.ini does not exist, create it
+if not os.path.exists('config.ini'):
+    config['settings'] = {'type': '0'}
+    config.write(open('config.ini', 'w'))
+else:
+    config.read('config.ini')
+    settings = int(config.get('settings', 'type'))
 
 #  ---------------  CSS Stylesheet  ---------------
 style = """
@@ -92,6 +98,8 @@ style = """
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+
+        #Initialize buttons, labels, etc
         self.setAcceptDrops(True)
         self.setFixedSize(1000, 800)
         self.setStyleSheet(style)
@@ -144,12 +152,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.horizontalHeader().setHidden(True)
         self.table.verticalHeader().setHidden(True)
         self.table.verticalHeader().setDefaultSectionSize(18)
-        #self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents) #resizes columns in table to fit contents, does not usually produce great results
         self.table.setFont(QtGui.QFont('Times', 12))
         self.model = QtGui.QStandardItemModel(self)
         self.table.setModel(self.model)
         self.table.setHidden(True)
 
+        #Initialize animations
         self.anim1 = QtCore.QPropertyAnimation(self.bFile, b"pos")
         self.anim1.setEndValue(QtCore.QPoint(294, 34))
         self.anim1.setDuration(200)
@@ -183,6 +191,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.anim8.setDuration(200)
         self.anim8.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
 
+        #Finish setting up GUI
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -200,6 +209,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bCSV.setText(_translate("MainWindow", "Display CSV"))
         self.bCSV.clicked.connect(self.openCSV)
 
+    #Open help menu
     def openHelp(self):
         dlg = QtWidgets.QMessageBox(self)
         dlg.setWindowTitle("How to use the Network Alert Pipeline")
@@ -207,6 +217,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dlg.setStyleSheet("QPushButton {border-radius: 2px; width: 60px; height: 20px;}")
         button = dlg.exec()
 
+    #Open settings menu
     def openSettings(self):
         global lock
         if lock == False:
@@ -214,6 +225,7 @@ class MainWindow(QtWidgets.QMainWindow):
             print("OPEN SETTINGS MENU")
             SettingsWindow.show(Sui)
 
+    #Start main algorithm with importedfile
     def startProcess(self):
         global lock
         if lock == False:
@@ -243,12 +255,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                SettingsWindow.updateMessage(self, 100, "Displaying CSV in GUI")
+                self.updateMessage(self, 100, "Displaying CSV in GUI")
                 self.showCSV(predicted)
                 lock = False
             else:
                 print("NO FILE SELECTED, cannot start process")
 
+    #Open file dialog for main PCAP file
     def openFile(self):
         if lock == False:
             global importedfile
@@ -260,6 +273,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 print("No file or invalid file selected")
 
+    #Drag and drop functionality
     def dragEnterEvent(self, event):
         if lock == False:
             data = event.mimeData()
@@ -290,6 +304,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.anim7.start()
         self.anim8.start()
 
+    #Selected PCAP file is accepted as valid
     def acceptImport(self):
         print("Imported file:", importedfile)
         self.bStart.setHidden(False)
@@ -299,6 +314,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.anim3.start()
         self.anim4.start()
 
+    #Open file dialog for CSV display
     def openCSV(self):
         if lock == False:
             importedCSV = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select a CSV file',directory=os.getcwd(), filter='CSV File (*.csv)')
@@ -309,6 +325,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 print("No file or invalid file selected")
 
+    #Updates progress bar with a new value
     def updateBar(self, goto):
         cur = self.progressBar.value()
         while cur < goto:
@@ -316,6 +333,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.progressBar.setProperty("value", cur)
             time.sleep(0.03)
 
+    #Display CSV in table
     def showCSV(self, filename):
         self.model.clear()
         with open(filename, 'r') as f:
@@ -331,42 +349,46 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.label3.setText(os.path.basename(filename)+":")
                     self.label3.setHidden(False)
 
-            # TODO: Print to GUI instead of terminal        
+                        # TODO: Print to GUI instead of terminal
             except: print("Error")
 
 class SettingsWindow(QtWidgets.QMainWindow):
-
     def __init__(self):
         super().__init__()
-        self.setFixedSize(400, 180)
+
+        #Initialize buttons, labels, etc
+        self.setFixedSize(400, 170)
         self.setStyleSheet(style)
         fnt = QtGui.QFont('Georgia', 12)
         self.bHelp = QtWidgets.QPushButton(self)
-        self.bHelp.setGeometry(QtCore.QRect(280, 20, 100, 36))
+        self.bHelp.setGeometry(QtCore.QRect(280, 10, 100, 36))
         self.bHelp.setFont(fnt)
         self.bTrain = QtWidgets.QPushButton(self)
-        self.bTrain.setGeometry(QtCore.QRect(220, 110, 160, 36))
+        self.bTrain.setGeometry(QtCore.QRect(220, 100, 160, 36))
         self.bTrain.setFont(fnt)
         self.bCreate = QtWidgets.QPushButton(self)
-        self.bCreate.setGeometry(QtCore.QRect(220, 70, 160, 36))
+        self.bCreate.setGeometry(QtCore.QRect(220, 60, 160, 36))
         self.bCreate.setFont(fnt)
+        self.bModel = QtWidgets.QPushButton(self)
+        self.bModel.setGeometry(QtCore.QRect(20, 60, 180, 76))
+        self.bModel.setFont(fnt)
         self.type = QtWidgets.QComboBox(self)
         self.type.addItem("Binary")
         self.type.addItem("Multiclass")
         self.type.setCurrentIndex(settings)
         self.type.resize(110, 36)
-        self.type.move(150, 20)
+        self.type.move(150, 10)
         self.type.setFont(fnt)
         l = QtWidgets.QLabel('Algorithm Type:', self)
         l.resize(120, 36)
-        l.move(20, 20)
+        l.move(20, 10)
         l.setFont(fnt)
-
         l = QtWidgets.QLabel('Network Traffic Alert Notification Pipeline - Version: 1.2.0', self)
         l.resize(380, 30)
-        l.move(20, 156)
+        l.move(20, 146)
         l.setFont(QtGui.QFont('Georgia', 10))
 
+        #Finish setting up GUI
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -380,44 +402,62 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.bCreate.clicked.connect(self.openFile0)
         self.bTrain.setText(_translate("SettingsWindow", "Retrain Algorithm"))
         self.bTrain.clicked.connect(self.openFile)
+        self.bModel.setText(_translate("SettingsWindow", "Import Model"))
+        self.bModel.clicked.connect(self.openModel)
         self.type.currentIndexChanged.connect(self.save)
 
+    #User closes settings menu
     def closeEvent(self, event):
         global lock
         lock = False
 
-    def openFile(self):
-        importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING Data',
-                                                              directory=os.getcwd(), filter='CSV File (*.csv)')
-        importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING Data',
-                                                              directory=os.getcwd(), filter='CSV File (*.csv)')
-        importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION Data',
-                                                              directory=os.getcwd(), filter='CSV File (*.csv)')
+    #Import 3 CSV files to create new training data
+    def openFile0(self):
+        importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile1 = importedfile1[0]
         importedfile2 = importedfile2[0]
         importedfile3 = importedfile3[0]
         if os.path.isfile(importedfile1) & os.path.isfile(importedfile2) & os.path.isfile(importedfile3):
             print("RETRAINING ALGORITHM")
-            # retraining algorithm FROM importedfile1 2 and 3
+                        # TODO: retraining algorithm FROM importedfile1 2 and 3
         else:
             print("No file(s) or invalid file(s) selected")
 
-    def openFile0(self):
-        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select unmodified dataset',
+    #Import a CSV files to retrain algorithm
+    def openFile(self):
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select algorithm model',
                                                               directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile0 = importedfile0[0]
         if os.path.isfile(importedfile0):
-            print("CREATING TRAINING DATA")
-            # CREATE TRAINING DATA from importedfile0
+            #Show string input dialog for model name
+            modelname, done1 = QtWidgets.QInputDialog.getText(self, 'Set Model Name', 'Enter model name:')
+            print("CREATING TRAINING DATA, model name "+modelname)
+                        # TODO: CREATE TRAINING DATA from importedfile0
         else:
-            print("No file(s) or invalid file(s) selected")
+            print("No file or invalid file selected")
 
+    #Import h5 model file
+    def openModel(self):
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select unmodified dataset', directory=os.getcwd(), filter='HDF5 File (*.h5)')
+        importedfile0 = importedfile0[0]
+        if os.path.isfile(importedfile0):
+            global importedmodel
+            importedmodel = importedfile0
+            print("IMPORTED NEW MODEL")
+        else:
+            print("No file or invalid file selected")
+
+    #Save settings to ini file
     def save(self):
         global settings
         settings = self.type.currentIndex()
-        #   ==========================================            NEED TO SAVE TO FILE HERE===================================
+        config['settings'] = {'type': str(settings)}
+        config.write(open('config.ini', 'w'))
         print("SETTINGS SAVED:", settings)
 
+    #Open help menu
     def openHelp(self):
         dlg = QtWidgets.QMessageBox(self)
         dlg.setWindowTitle("Settings Help")
@@ -425,10 +465,12 @@ class SettingsWindow(QtWidgets.QMainWindow):
         dlg.setStyleSheet("QPushButton {border-radius: 2px; width: 60px; height: 20px;}")
         button = dlg.exec()
 
+    #Update label text
     def updateMessage(self, progress, message):
         self.label.setText(message)
         self.updateBar(progress)
 
+#Driver code
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
