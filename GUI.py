@@ -21,29 +21,41 @@ import h5py
 import configparser
 
 #  --------------- Components  ---------------
-import pcap_to_csv as ptc
+#import pcap_to_csv as ptc
 # import train_test_creator as ttc
 # import normalize as norm
 # import data_trimmer as dt
 # import parameterizer as param
 # import parameterize_mal as pmal
-import multiclass_classification as multi
+#import multiclass_classification as multi
 
 #  ---------------  Global Variables  ---------------
 importedfile = ""
-importedmodel = ""
-settings = 0
 lock = False
+
+settings = 0
+importedmodel = ""
 
 #  ---------------  User Config  ---------------
 config = configparser.ConfigParser()
 #If config.ini does not exist, create it
 if not os.path.exists('config.ini'):
-    config['settings'] = {'type': '0'}
+    config['settings'] = {'type': '0', 'model': 'Default'}
     config.write(open('config.ini', 'w'))
-else:
-    config.read('config.ini')
     settings = int(config.get('settings', 'type'))
+    importedmodel = config.get('settings', 'model')
+else:
+    try:
+        config.read('config.ini')
+        settings = int(config.get('settings', 'type'))
+        importedmodel = config.get('settings', 'model')
+    except:
+        #This occurs when the format of the config file is incorrect or outdated
+        config['settings'] = {'type': '0', 'model': 'Default'}
+        config.write(open('config.ini', 'w'))
+        settings = int(config.get('settings', 'type'))
+        importedmodel = config.get('settings', 'model')
+        print("Error reading config file, most likely format is incorrect. File has been deleted and replaced with default settings")
 
 #  ---------------  CSS Stylesheet  ---------------
 style = """
@@ -370,7 +382,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.bCreate.setGeometry(QtCore.QRect(220, 60, 160, 36))
         self.bCreate.setFont(fnt)
         self.bModel = QtWidgets.QPushButton(self)
-        self.bModel.setGeometry(QtCore.QRect(20, 60, 180, 76))
+        self.bModel.setGeometry(QtCore.QRect(20, 60, 180, 54))
         self.bModel.setFont(fnt)
         self.type = QtWidgets.QComboBox(self)
         self.type.addItem("Binary")
@@ -379,11 +391,15 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.type.resize(110, 36)
         self.type.move(150, 10)
         self.type.setFont(fnt)
+        self.model = QtWidgets.QLabel('Model: '+os.path.splitext(importedmodel)[0], self)
+        self.model.resize(200, 30)
+        self.model.move(20, 114)
+        self.model.setFont(fnt)
         l = QtWidgets.QLabel('Algorithm Type:', self)
         l.resize(120, 36)
         l.move(20, 10)
         l.setFont(fnt)
-        l = QtWidgets.QLabel('Network Traffic Alert Notification Pipeline - Version: 1.2.0', self)
+        l = QtWidgets.QLabel('Network Traffic Alert Notification Pipeline - Version: 1.2.1', self)
         l.resize(380, 30)
         l.move(20, 146)
         l.setFont(QtGui.QFont('Georgia', 10))
@@ -411,8 +427,8 @@ class SettingsWindow(QtWidgets.QMainWindow):
         global lock
         lock = False
 
-    #Import 3 CSV files to create new training data
-    def openFile0(self):
+    #Import a CSV file to create new training data
+    def openFile(self):
         importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION Data',directory=os.getcwd(), filter='CSV File (*.csv)')
@@ -420,32 +436,42 @@ class SettingsWindow(QtWidgets.QMainWindow):
         importedfile2 = importedfile2[0]
         importedfile3 = importedfile3[0]
         if os.path.isfile(importedfile1) & os.path.isfile(importedfile2) & os.path.isfile(importedfile3):
-            print("RETRAINING ALGORITHM")
-                        # TODO: retraining algorithm FROM importedfile1 2 and 3
+            #Show string input dialog for model name
+            savename, done1 = QtWidgets.QInputDialog.getText(self, 'Save File', 'Enter output file name:')
+            if done1 and savename != '':
+                print("RETRAINING ALGORITHM, savename = "+savename)
+                        # TODO: CREATE TRAINING DATA FROM importedfile1 2 AND 3, FILENAME TO SAVE IS savename
+            else:
+                print("Operation cancelled / Invalid name entry")
         else:
             print("No file(s) or invalid file(s) selected")
 
-    #Import a CSV files to retrain algorithm
-    def openFile(self):
-        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select algorithm model',
-                                                              directory=os.getcwd(), filter='CSV File (*.csv)')
+    #Import 3 CSV files to retrain algorithm
+    def openFile0(self):
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select New Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile0 = importedfile0[0]
         if os.path.isfile(importedfile0):
-            #Show string input dialog for model name
-            modelname, done1 = QtWidgets.QInputDialog.getText(self, 'Set Model Name', 'Enter model name:')
-            print("CREATING TRAINING DATA, model name "+modelname)
-                        # TODO: CREATE TRAINING DATA from importedfile0
+            #Show integer input dialog for packet count
+            packetcount, done1 = QtWidgets.QInputDialog.getInt(self, 'Packet Count', 'Enter total number of packets in datasets combined:')
+            if done1 and packetcount > 0:
+                print("CREATING TRAINING DATA")
+                        # TODO: RETRAIN ALGORITHM FROM importedfile0, and also save packetcount to wherever that needs to be used
+            else:
+                print("Operation cancelled / Invalid packet count")
         else:
             print("No file or invalid file selected")
 
     #Import h5 model file
     def openModel(self):
-        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select unmodified dataset', directory=os.getcwd(), filter='HDF5 File (*.h5)')
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select algorithm model', directory=os.getcwd(), filter='HDF5 File (*.h5)')
         importedfile0 = importedfile0[0]
         if os.path.isfile(importedfile0):
             global importedmodel
             importedmodel = importedfile0
-            print("IMPORTED NEW MODEL")
+            config['settings'] = {'type': str(settings), 'model': importedmodel}
+            config.write(open('config.ini', 'w'))
+            self.model.setText('Model: '+os.path.basename(os.path.splitext(importedmodel)[0]))
+            print("IMPORTED NEW MODEL, and saved config")
         else:
             print("No file or invalid file selected")
 
@@ -453,7 +479,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
     def save(self):
         global settings
         settings = self.type.currentIndex()
-        config['settings'] = {'type': str(settings)}
+        config['settings'] = {'type': str(settings), 'model': importedmodel}
         config.write(open('config.ini', 'w'))
         print("SETTINGS SAVED:", settings)
 
