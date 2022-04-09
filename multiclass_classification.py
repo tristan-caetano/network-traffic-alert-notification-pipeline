@@ -23,30 +23,50 @@ import GUI
 # This function builds the model.
 def build_model():
 
+    multi = False
+
     # Changing activation
     activationm = "softmax"
+
+    layers = 0
+
+    if multi: layers = 6 
+    else: layers = 1
 
     # Creating our model with Dense layers
     model_2 = tf.keras.Sequential([
         
         # Input Layer (7 Columns)
-        tf.keras.layers.Dense(7, input_shape = (7,), activation=activationm), 
+        tf.keras.layers.Dense(18, input_shape = (16,), activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(100, activation=activationm), 
-        tf.keras.layers.Dense(100, activation=activationm), 
-        tf.keras.layers.Dense(1000, activation=activationm), 
-        tf.keras.layers.Dense(1000, activation=activationm), 
-        tf.keras.layers.Dense(1000, activation=activationm), 
-        tf.keras.layers.Dense(100, activation=activationm), 
-        tf.keras.layers.Dense(100, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
+        tf.keras.layers.Dense(10, activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
 
         # Output Layer (6 classes)
-        tf.keras.layers.Dense(6, activation="softmax") # output shape is 10, activation is softmax
+        tf.keras.layers.Dense(layers, activation="softmax") # output shape is 10, activation is softmax
     ])
 
     # Compiling the model
-    model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .001), metrics=['accuracy'])
+    if multi:
+        model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .0001), metrics=['accuracy'])
+    else:
+        model_2.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .0001), metrics=['accuracy'])
+    
     return model_2
 
 # This function will determine the types of malware packets. 
@@ -58,12 +78,12 @@ def determine_mal_packets(training_set, validation_set, testing_set):
     test_p_dataset = pd.read_csv(testing_set, low_memory=False)
 
     # Saving multiclass classification column to variable.
-    class_df = p_dataset['malname']
-    vclass_df = v_p_dataset['malname']
+    # class_df = p_dataset['malname']
+    # vclass_df = v_p_dataset['malname']
 
     # Saving binary classification column to variable.
-    # class_df = p_dataset['ismal']
-    # vclass_df = v_p_dataset['ismal']
+    class_df = p_dataset['ismal']
+    vclass_df = v_p_dataset['ismal']
 
     # Removing classifications from testing datasets.
     p_dataset = p_dataset.drop(['malname','ismal'], axis=1)
@@ -101,13 +121,24 @@ def saved_weights(converted_set, model, gui_self):
     GUI.SettingsWindow.updateMessage(gui_self, 40, "Loading converted set into algorithm")
     test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-16")
     test.columns = [
-                "srcport",
-                "dstport",
-                "timerel", 
-                "tranbytes", 
-                "timetolive", 
-                "srctcp", 
-                "dsttcp", ]
+                "srcport",      # 2
+                "dstport",      # 4
+                "timerel",      # 7
+                "srctranbytes", # 8
+                "dsttranbytes", # 9
+                "timetolive",   # 10
+                "dsttosrc",     # 18
+                "srcwindow",    # 19
+                "dstwindow",    # 20
+                "srctcp",       # 21
+                "dstseq",       # 22
+                "srcmean",      # 23
+                "setupround",   # 33
+                "setupsynack",  # 34
+                "setupackack",  # 35
+                "ifequal",      # 36
+                "malname",      # 48 
+                "ismal" ]       # 49
 
     # Dropping binary and multiclass classification columns for testing set
     #test = test.drop(['malname','ismal'], axis=1)
@@ -130,5 +161,5 @@ def saved_weights(converted_set, model, gui_self):
 
 # Calling function to test.
 # CSV files created from train_test_creator then parameterized. 
-# determine_mal_packets("p_training.csv", "p_validation.csv", "p_testing.csv")
+determine_mal_packets("p_training.csv", "p_validation.csv", "p_testing.csv")
 # saved_weights("p_testing.csv", 'curr_model.h5')

@@ -35,19 +35,30 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
 
     # Pandas Import CSV
     p_dataset = pd.read_csv(dataset, low_memory=False)
-    p_dataset = p_dataset.rename(columns={
-    "1390": "srcport",
-    "53": "dstport",
-    "0.001055": "timerel", 
-    "132": "tranbytes", 
-    "31": "timetolive", 
-    "0.4": "srctcp", 
-    "0.12": "dsttcp", 
-    "Unnamed: 47": "malname", 
-    "0.18": "ismal"})
+    p_dataset.columns = [
+                "srcport",      # 2
+                "dstport",      # 4
+                "timerel",      # 7
+                "srctranbytes", # 8
+                "dsttranbytes", # 9
+                "timetolive",   # 10
+                "dsttosrc",     # 18
+                "srcwindow",    # 19
+                "dstwindow",    # 20
+                "srctcp",       # 21
+                "dstseq",       # 22
+                "srcmean",      # 23
+                "setupround",   # 33
+                "setupsynack",  # 34
+                "setupackack",  # 35
+                "ifequal",      # 36
+                "malname",      # 48 
+                "ismal" ]       # 49
 
     # Prints number and names of unique values in malicious packet index
     unique_names = p_dataset[p_dataset.columns[class_column]].unique()
+
+    print(unique_names)
 
     unique_names = np.delete(unique_names, 5)
     unique_names = np.delete(unique_names, 6)
@@ -55,9 +66,13 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     unique_names = np.delete(unique_names, 6)
     unique_names = np.delete(unique_names, 6)
     unique_names = np.delete(unique_names, 6)
+    unique_names = np.delete(unique_names, 6)
+    unique_names = np.delete(unique_names, 6)
     
+    unique_names = [pd.NA, ' Fuzzers']
+
     print(unique_names)
-    
+
     # How many of each packet should be in the dataframe
     per_packet = math.floor(num_of_packets / len(unique_names))
 
@@ -86,16 +101,36 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
             print("Count: ", count, " Per Packet: ", per_packet, "Packet Type: ", unique_names[current_packet])
             count = 0
             amt_of_each_mal[current_packet] = temp_df
+            # temp_df = pd.DataFrame(columns=[
+            #     "srcport",
+            #     "dstport",
+            #     "timerel", 
+            #     "tranbytes", 
+            #     "timetolive", 
+            #     "srctcp", 
+            #     "dsttcp", 
+            #     "malname", 
+            #     "ismal"])
+
             temp_df = pd.DataFrame(columns=[
-                "srcport",
-                "dstport",
-                "timerel", 
-                "tranbytes", 
-                "timetolive", 
-                "srctcp", 
-                "dsttcp", 
-                "malname", 
-                "ismal"])
+                "srcport",      # 2
+                "dstport",      # 4
+                "timerel",      # 7
+                "srctranbytes", # 8
+                "dsttranbytes", # 9
+                "timetolive",   # 10
+                "dsttosrc",     # 18
+                "srcwindow",    # 19
+                "dstwindow",    # 20
+                "srctcp",       # 21
+                "dstseq",       # 22
+                "srcmean",      # 23
+                "setupround",   # 33
+                "setupsynack",  # 34
+                "setupackack",  # 35
+                "ifequal",      # 36
+                "malname",      # 48 
+                "ismal" ])      # 49
 
             current_packet += 1
             x = 0         
@@ -132,15 +167,25 @@ def create_data_sets(amt_of_each_mal, percentages):
 
     # 1: training 64%, 2: validation 16%, 3: testing 20%
     training_sets = [pd.DataFrame(columns=[
-                "srcport",
-                "dstport",
-                "timerel", 
-                "tranbytes", 
-                "timetolive", 
-                "srctcp", 
-                "dsttcp", 
-                "malname", 
-                "ismal"])] * 3
+                "srcport",      # 2
+                "dstport",      # 4
+                "timerel",      # 7
+                "srctranbytes", # 8
+                "dsttranbytes", # 9
+                "timetolive",   # 10
+                "dsttosrc",     # 18
+                "srcwindow",    # 19
+                "dstwindow",    # 20
+                "srctcp",       # 21
+                "dstseq",       # 22
+                "srcmean",      # 23
+                "setupround",   # 33
+                "setupsynack",  # 34
+                "setupackack",  # 35
+                "ifequal",      # 36
+                "malname",      # 48 
+                "ismal" ])      # 49
+                ] * 3
     
     amt_per_df = [0] * len(amt_of_each_mal)
     starting_points = [0] * len(amt_of_each_mal)
@@ -165,4 +210,4 @@ def create_data_sets(amt_of_each_mal, percentages):
     training_sets[1].to_csv("validation.csv", index=False)
     training_sets[2].to_csv("testing.csv", index=False)
     
-determine_packet_allocation("snip_UNSW-NB15_com.csv", 18000, 7)
+determine_packet_allocation("snip_UNSW-NB15_com.csv", 30948, 16)
