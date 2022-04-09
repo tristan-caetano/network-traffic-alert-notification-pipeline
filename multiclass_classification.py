@@ -21,9 +21,7 @@ import GUI
 #  ---------------  Start of Algorithm  ---------------
 
 # This function builds the model.
-def build_model():
-
-    multi = False
+def build_model(multi):
 
     # Changing activation
     activationm = "softmax"
@@ -70,20 +68,21 @@ def build_model():
     return model_2
 
 # This function will determine the types of malware packets. 
-def determine_mal_packets(training_set, validation_set, testing_set):
+def determine_mal_packets(training_set, validation_set, testing_set, multi, output_model_name):
     
     # Reads the CSV files.
     p_dataset = pd.read_csv(training_set, low_memory=False)
     v_p_dataset = pd.read_csv(validation_set, low_memory=False)
     test_p_dataset = pd.read_csv(testing_set, low_memory=False)
 
-    # Saving multiclass classification column to variable.
-    # class_df = p_dataset['malname']
-    # vclass_df = v_p_dataset['malname']
-
-    # Saving binary classification column to variable.
-    class_df = p_dataset['ismal']
-    vclass_df = v_p_dataset['ismal']
+    if multi:
+        # Saving multiclass classification column to variable.
+        class_df = p_dataset['malname']
+        vclass_df = v_p_dataset['malname']
+    else:
+        # Saving binary classification column to variable.
+        class_df = p_dataset['ismal']
+        vclass_df = v_p_dataset['ismal']
 
     # Removing classifications from testing datasets.
     p_dataset = p_dataset.drop(['malname','ismal'], axis=1)
@@ -91,7 +90,7 @@ def determine_mal_packets(training_set, validation_set, testing_set):
     test_p_dataset = test_p_dataset.drop(['malname','ismal'], axis=1)
 
     # Saving the built model to this variable
-    model_2 = build_model()
+    model_2 = build_model(multi)
     
     # Create the learning rate callback (not used)
     #lr_scheduler = tf.keras.callbacks.LearningRateScheduler(lambda epoch: 1e-3 * 10**(epoch/20)) 
@@ -106,7 +105,7 @@ def determine_mal_packets(training_set, validation_set, testing_set):
 
     # Will save the entire model to a HDF5 file.
     # The '.h5' extension indicates that the model should be saved to HDF5.
-    model_2.save('curr_model.h5')
+    model_2.save(output_model_name)
 
 # This function takes in the testing data or converted set and saved model to make predictions
 # Outputs the input CSV set with additional column containing predictions
@@ -161,5 +160,5 @@ def saved_weights(converted_set, model, gui_self):
 
 # Calling function to test.
 # CSV files created from train_test_creator then parameterized. 
-determine_mal_packets("p_training.csv", "p_validation.csv", "p_testing.csv")
+#determine_mal_packets("p_training.csv", "p_validation.csv", "p_testing.csv", "curr_model.h5")
 # saved_weights("p_testing.csv", 'curr_model.h5')

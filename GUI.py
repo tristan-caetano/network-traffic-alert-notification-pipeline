@@ -22,12 +22,12 @@ import configparser
 
 #  --------------- Components  ---------------
 #import pcap_to_csv as ptc
-# import train_test_creator as ttc
+import train_test_creator as ttc
 # import normalize as norm
-# import data_trimmer as dt
+import data_trimmer as dt
 # import parameterizer as param
-# import parameterize_mal as pmal
-#import multiclass_classification as multi
+import parameterize_mal as pmal
+import multiclass_classification as multi
 
 #  ---------------  Global Variables  ---------------
 importedfile = ""
@@ -253,8 +253,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.progressBar.setHidden(False)
 
                 # PCAP to CSV converter
-                converted = ptc.convert(basename, self)
-                predicted = multi.saved_weights(converted, 'my_model.h5', self)
+                curr_file = ptc.convert(basename, self)
+                # curr_file = multi.saved_weights(curr_file, os.path.splitext(importedmodel)[0], self)
 
                 #TRIGGERS AFTER PROCESS IS COMPLETE
                 self.progressBar.setHidden(True)
@@ -268,7 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
                 self.updateMessage(self, 100, "Displaying CSV in GUI")
-                self.showCSV(predicted)
+                self.showCSV(curr_file)
                 lock = False
             else:
                 print("NO FILE SELECTED, cannot start process")
@@ -372,6 +372,8 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.setFixedSize(400, 170)
         self.setStyleSheet(style)
         fnt = QtGui.QFont('Georgia', 12)
+        fntb = QtGui.QFont('Georgia', 16)
+        fntb.setBold(True)
         self.bHelp = QtWidgets.QPushButton(self)
         self.bHelp.setGeometry(QtCore.QRect(280, 10, 100, 36))
         self.bHelp.setFont(fnt)
@@ -391,8 +393,8 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.type.resize(110, 36)
         self.type.move(150, 10)
         self.type.setFont(fnt)
-        self.model = QtWidgets.QLabel('Model: '+os.path.splitext(importedmodel)[0], self)
-        self.model.resize(200, 30)
+        self.model = QtWidgets.QLabel('Model: '+os.path.basename(os.path.splitext(importedmodel)[0]), self)
+        self.model.resize(180, 30)
         self.model.move(20, 114)
         self.model.setFont(fnt)
         l = QtWidgets.QLabel('Algorithm Type:', self)
@@ -403,6 +405,11 @@ class SettingsWindow(QtWidgets.QMainWindow):
         l.resize(380, 30)
         l.move(20, 146)
         l.setFont(QtGui.QFont('Georgia', 10))
+        self.wait = QtWidgets.QPushButton(self)
+        self.wait.setGeometry(QtCore.QRect(0, 0, 400, 170))
+        self.wait.setFont(fntb)
+        self.wait.setStyleSheet("background-color: rgba(255, 255, 255, 180);border-width: 0px;border-radius: 0px;")
+        self.wait.setHidden(True)
 
         #Finish setting up GUI
         self.retranslateUi()
@@ -421,14 +428,16 @@ class SettingsWindow(QtWidgets.QMainWindow):
         self.bModel.setText(_translate("SettingsWindow", "Import Model"))
         self.bModel.clicked.connect(self.openModel)
         self.type.currentIndexChanged.connect(self.save)
+        self.wait.setText(_translate("SettingsWindow", "Working...\nPlease wait"))
 
     #User closes settings menu
     def closeEvent(self, event):
         global lock
         lock = False
 
-    #Import a CSV file to create new training data
+    #Import 3 CSV s to retrain algorithm
     def openFile(self):
+        self.wait.setHidden(False)
         importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION Data',directory=os.getcwd(), filter='CSV File (*.csv)')
@@ -437,29 +446,45 @@ class SettingsWindow(QtWidgets.QMainWindow):
         importedfile3 = importedfile3[0]
         if os.path.isfile(importedfile1) & os.path.isfile(importedfile2) & os.path.isfile(importedfile3):
             #Show string input dialog for model name
-            savename, done1 = QtWidgets.QInputDialog.getText(self, 'Save File', 'Enter output file name:')
+            savename, done1 = QtWidgets.QInputDialog.getText(self, 'Save File', 'Enter desired output HDF5 file name:')
             if done1 and savename != '':
                 print("RETRAINING ALGORITHM, savename = "+savename)
-                        # TODO: CREATE TRAINING DATA FROM importedfile1 2 AND 3, FILENAME TO SAVE IS savename
+                multi.determine_mal_packets(importedfile1, importedfile3, importedfile2, settings, savename)
+                self.wait.setHidden(True)
             else:
                 print("Operation cancelled / Invalid name entry")
+                self.wait.setHidden(True)
         else:
             print("No file(s) or invalid file(s) selected")
+            self.wait.setHidden(True)
 
-    #Import 3 CSV files to retrain algorithm
+    #Import a CSV file to create training data
     def openFile0(self):
+        self.wait.setHidden(False)
         importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select New Data',directory=os.getcwd(), filter='CSV File (*.csv)')
         importedfile0 = importedfile0[0]
         if os.path.isfile(importedfile0):
             #Show integer input dialog for packet count
             packetcount, done1 = QtWidgets.QInputDialog.getInt(self, 'Packet Count', 'Enter total number of packets in datasets combined:')
             if done1 and packetcount > 0:
-                print("CREATING TRAINING DATA")
-                        # TODO: RETRAIN ALGORITHM FROM importedfile0, and also save packetcount to wherever that needs to be used
+                columnval, done2 = QtWidgets.QInputDialog.getInt(self, 'Column Number', 'Enter index of column that contains classes AFTER the dataset is trimmed (columns start at 0):')
+                if done2 and columnval >= 0:
+                    print("CREATING TRAINING DATA")
+                    time.sleep(0)
+                    training_data = dt.trim(os.path.basename(importedfile0))
+                    training_data = ttc.determine_packet_allocation(training_data, packetcount, columnval)
+                    training_data = pmal.change(training_data)
+                    # TODO: might normalize data
+                    self.wait.setHidden(True)
+                else:
+                    print("Operation cancelled / Invalid column index")
+                    self.wait.setHidden(True)
             else:
                 print("Operation cancelled / Invalid packet count")
+                self.wait.setHidden(True)
         else:
             print("No file or invalid file selected")
+            self.wait.setHidden(True)
 
     #Import h5 model file
     def openModel(self):
@@ -487,7 +512,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
     def openHelp(self):
         dlg = QtWidgets.QMessageBox(self)
         dlg.setWindowTitle("Settings Help")
-        dlg.setText("-Algorithm type-\nBINARY: Relies on two classes.\nMULTICLASS: Can rely on more than two classes.\n\n-Training Data-\nTo create new training data, click Create Training Data and select csv files for training data, testing data, and validation data.\nTo train the algorithm with new data, click Retrain Algorithm and choose the newly created training data")
+        dlg.setText("-Algorithm type-\nBINARY: Relies on two classes.\nMULTICLASS: Can rely on more than two classes.\n\n-Model-\nThe model is used to make predictions in the algorithm\nTo import a new model, click Import Model and select a valid HDF5 file\n\n-Training Data-\nTo create new training data, click Create Training Data and select csv files for training data, testing data, and validation data.\nTo train the algorithm with new data, click Retrain Algorithm and choose the newly created training data")
         dlg.setStyleSheet("QPushButton {border-radius: 2px; width: 60px; height: 20px;}")
         button = dlg.exec()
 

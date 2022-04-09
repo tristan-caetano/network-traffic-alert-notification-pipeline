@@ -21,6 +21,9 @@ import math
 def determine_packet_allocation(dataset, num_of_packets, class_column):
 # 10000 packets
 
+    # Output values
+    outputs = ["training_" + dataset, "validation_" + dataset, "testing_" + dataset]
+
     # Getting amount of packets for each set (80%: 80% train / 20% validation)(20% testing)
     # training = math.floor((num_of_packets * 80) / 100)
     # testing = math.floor((num_of_packets * 20) / 100)
@@ -69,7 +72,7 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     unique_names = np.delete(unique_names, 6)
     unique_names = np.delete(unique_names, 6)
     
-    unique_names = [pd.NA, ' Fuzzers']
+    #unique_names = [pd.NA, ' Fuzzers']
 
     print(unique_names)
 
@@ -158,10 +161,12 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     print(amt_of_each_mal)
 
     # Sending data to be split into csvs
-    create_data_sets(amt_of_each_mal, percentages)
+    create_data_sets(amt_of_each_mal, percentages, outputs)
+
+    return outputs
 
 #
-def create_data_sets(amt_of_each_mal, percentages):
+def create_data_sets(amt_of_each_mal, percentages, outputs):
     
     print("Splitting datasets")
 
@@ -206,8 +211,8 @@ def create_data_sets(amt_of_each_mal, percentages):
                 training_sets[a] = training_sets[a].append(amt_of_each_mal[x].iloc[b])
             starting_points[x] += curr_amt
 
-    training_sets[0].to_csv("training.csv", index=False)
-    training_sets[1].to_csv("validation.csv", index=False)
-    training_sets[2].to_csv("testing.csv", index=False)
+    training_sets[0].to_csv(outputs[0], index=False)
+    training_sets[1].to_csv(outputs[1], index=False)
+    training_sets[2].to_csv(outputs[2], index=False)
     
-determine_packet_allocation("snip_UNSW-NB15_com.csv", 30948, 16)
+# determine_packet_allocation("snip_UNSW-NB15_com.csv", 30948, 16)

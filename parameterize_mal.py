@@ -16,18 +16,25 @@ import pandas as pd
 
 def change(input):
 
-    # Pandas Import CSV
-    df = pd.read_csv(input, low_memory=False)
+    count = 0
+    outputs = ["", "", ""]
 
-    df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', ' Reconnaissance ', 'DoS', 'Generic', ' Fuzzers'],['0','1', '2', '2', '2', '3', '4', '5'])
-    #df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', 'DoS', 'Generic', ' Fuzzers', 'Shellcode', 'Worms', 'Backdoors', 'Analysis'],['0','1', '2', '2', '3', '4', '5', '6', '7', '8', '9'])
+    # For loop that parameterizes each file
+    for files in input:
 
-    df.to_csv("p_" + input, index=False)
+        # Pandas Import CSV
+        df = pd.read_csv(files, low_memory=False)
+
+        df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', ' Reconnaissance ', 'DoS', 'Generic', ' Fuzzers'],['0','1', '2', '2', '2', '3', '4', '5'])
+        #df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', 'DoS', 'Generic', ' Fuzzers', 'Shellcode', 'Worms', 'Backdoors', 'Analysis'],['0','1', '2', '2', '3', '4', '5', '6', '7', '8', '9'])
+
+        # Saving file names to be returned and exporting files
+        outputs[count] = "p_" + files
+        df.to_csv(outputs[count], index=False)
+        count += 1
+
+    return outputs
 
 # change("training.csv")
 # change("validation.csv")
 # change("testing.csv")
-
-change("training.csv")
-change("validation.csv")
-change("testing.csv")
