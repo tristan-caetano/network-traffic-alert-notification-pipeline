@@ -21,7 +21,7 @@ import h5py
 import configparser
 
 #  --------------- Components  ---------------
-#import pcap_to_csv as ptc
+import pcap_to_csv as ptc
 import train_test_creator as ttc
 # import normalize as norm
 import data_trimmer as dt
@@ -253,6 +253,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.progressBar.setHidden(False)
 
                 # PCAP to CSV converter
+                print("BASE: ", basename)
                 curr_file = ptc.convert(basename, self)
                 # curr_file = multi.saved_weights(curr_file, os.path.splitext(importedmodel)[0], self)
 
@@ -267,7 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                self.updateMessage(self, 100, "Displaying CSV in GUI")
+                #self.updateMessage(self, 100, "Displaying CSV in GUI")
                 self.showCSV(curr_file)
                 lock = False
             else:
@@ -350,9 +351,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.clear()
         with open(filename, 'r') as f:
             try:
-                for row in csv.reader(f):
+
+                for row in csv.reader(open(filename, "r")):
                     items = [
-                        QtGui.QStandardItem(field)
+                        QtGui.QStandardItem(str(field))
                         for field in row
                     ]
             
@@ -361,8 +363,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.label3.setText(os.path.basename(filename)+":")
                     self.label3.setHidden(False)
 
-                        # TODO: Print to GUI instead of terminal
-            except: print("Error")
+                    # TODO: Print to GUI instead of terminal
+            except: print("CSV could not be sent to window.")
 
 class SettingsWindow(QtWidgets.QMainWindow):
     def __init__(self):

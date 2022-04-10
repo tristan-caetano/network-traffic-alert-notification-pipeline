@@ -17,6 +17,7 @@ import pyshark
 from pyshark import tshark
 import platform
 import GUI
+import pandas as pd
 
 # Function that converts pcap to csv
 def convert(in_file, gui_self):
@@ -41,6 +42,31 @@ def convert(in_file, gui_self):
   # It should be noted through observation of the converter that the .pcap files
   # converted through Linux have a .csv output with utf-8 encoding, however, when 
   # converted through Windows, the .csv output has utf-16 encoding.  
+
+  # Pandas Import CSV to remove null values and add column headers
+  ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
+  ds.fillna(value = 0, inplace = True)
+  # ds.columns = [
+  #               "srcport",      # 2
+  #               "dstport",      # 4
+  #               "timerel",      # 7
+  #               "srctranbytes", # 8
+  #               "timetolive",   # 10
+  #               "srctcp",       # 21
+  #               "setupackack"]  # 35
+
+  ds.columns = [
+                "srcip",        # 1
+                "srcport",      # 2
+                "dstip",        # 3
+                "dstport",      # 4
+                "protocol",      # 5
+                "timerel",      # 7
+                "srctranbytes", # 8
+                "timetolive",   # 10
+                "srctcp",       # 21
+                "setupackack"]  # 35
+  ds.to_csv(out_file, index=False)
 
   return out_file
 

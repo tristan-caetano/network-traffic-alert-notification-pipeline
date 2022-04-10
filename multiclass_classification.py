@@ -31,6 +31,8 @@ def build_model(multi):
     if multi: layers = 6 
     else: layers = 1
 
+    print("Final Layer: ", layers)
+
     # Creating our model with Dense layers
     model_2 = tf.keras.Sequential([
         
@@ -61,9 +63,10 @@ def build_model(multi):
 
     # Compiling the model
     if multi:
-        model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .0001), metrics=['accuracy'])
+        model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .001), metrics=['accuracy'])
     else:
-        model_2.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .0001), metrics=['accuracy'])
+        model_2.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .001), metrics=['accuracy'])
+        print("Binary")
     
     return model_2
 
@@ -124,7 +127,6 @@ def saved_weights(converted_set, model, gui_self):
                 "dstport",      # 4
                 "timerel",      # 7
                 "srctranbytes", # 8
-                "dsttranbytes", # 9
                 "timetolive",   # 10
                 "dsttosrc",     # 18
                 "srcwindow",    # 19

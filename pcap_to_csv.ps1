@@ -7,4 +7,5 @@
     )
 
     # Running the tshark command from the tshark.exe found in the default install directory
-    & 'C:\Program Files\Wireshark\tshark.exe' -r $wInput -T fields -E separator="," -e tcp.srcport -e tcp.dstport -e frame.time_relative -e frame.len -e ip.ttl -e tcp.seq -e tcp.ack > $wOutput
+    # & 'C:\Program Files\Wireshark\tshark.exe' -r $wInput -T fields -E separator="," -e tcp.srcport -e tcp.dstport -e frame.time_relative -e frame.len -e ip.ttl -e tcp.seq -e tcp.ack > $wOutput
+    & 'C:\Program Files\Wireshark\tshark.exe' -r $wInput -T fields -E separator="," -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport -e _ws.col.Protocol -e frame.time_relative -e frame.len -e ip.ttl -e tcp.seq -e tcp.ack > $wOutput
