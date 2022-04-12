@@ -450,6 +450,7 @@ class SettingsWindow(QtWidgets.QMainWindow):
             #Show string input dialog for model name
             savename, done1 = QtWidgets.QInputDialog.getText(self, 'Save File', 'Enter desired output HDF5 file name:')
             if done1 and savename != '':
+                savename=savename+".h5"
                 print("RETRAINING ALGORITHM, savename = "+savename)
                 multi.determine_mal_packets(importedfile1, importedfile3, importedfile2, settings, savename)
                 self.wait.setHidden(True)
