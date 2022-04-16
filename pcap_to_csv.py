@@ -15,21 +15,44 @@
 import os 
 import pyshark
 from pyshark import tshark
+import platform
+import GUI
 import pandas as pd
-import GUI_print as gp
+import data_trimmer as dt
 
 # Function that converts pcap to csv
-def convert(output, in_file):
+def convert(in_file, gui_self):
 
   # Name of csv output file
-  out_file = "converted.csv"
+  out_file = in_file + ".csv"
 
-  gp.print(output, '\nBeginning Conversion\nThis may take a bit')
+  GUI.SettingsWindow.updateMessage(gui_self, 10, "Using Tshark on pcap file")
 
-  # Using TShark to extract the PCAP parameters
-  os.system('tshark -r ' + in_file + ' -T fields -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport -e _ws.col.Protocol -e frame.time_relative -e tcp.analysis.bytes_in_flight -e ip.ttl -e tcp.seq -e tcp.ack -E separator=,> '+ out_file) #Uses command line argument to read in the PCAP
+  # Run this command if on Linux
+  if platform.system() == "Linux":
+    # Using TShark to extract the PCAP parameters
+    os.system('tshark -r ' + in_file + ' -T fields -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport -e _ws.col.Protocol -e frame.time_relative -e frame.len -e ip.ttl -e tcp.seq -e tcp.ack -E separator=,> '+ out_file) #Uses command line argument to read in the PCAP
 
-  gp.print(output, ('\nConversion Complete!\nFile Created: ' + out_file + '\nOpening File in GUI...'))
+  # Run this command if on Windows
+  elif platform.system() == "Windows":
+    temp_command = "powershell -file pcap_to_csv.ps1 -wInput "+in_file+" -wOutput "+out_file+""
+    os.system(temp_command)
+  
+  GUI.SettingsWindow.updateMessage(gui_self, 20, "Creating CSV file")
+
+  # It should be noted through observation of the converter that the .pcap files
+  # converted through Linux have a .csv output with utf-8 encoding, however, when 
+  # converted through Windows, the .csv output has utf-16 encoding.  
+
+  # Pandas Import CSV to remove null values and add column headers
+  ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
+  ds.fillna(value = 0, inplace = True)
+
+  # Getting column names
+  ds.columns = dt.get_cols(False)
+
+  # Outputting file to csv
+  ds.to_csv(out_file, index=False)
 
   return out_file
 

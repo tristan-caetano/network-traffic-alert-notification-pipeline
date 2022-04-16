@@ -1,4 +1,4 @@
-# Network Traffic Alert Notification Pipeline Project MVP 
+# Network Traffic Alert Notification Pipeline Project MVP
 # University of Massachusetts Dartmouth
 # Naval Undersea Warfare Center
 
@@ -9,171 +9,526 @@
 # Lead Developer: Jason Pinto
 # Developer: Tate DeTerra
 
-# Basic GUI for running the various functions, required for MVP presentation
+# Final GUI for interfacing with the pipeline
 
 #  ---------------  Libraries  ---------------
-import tkinter as tk
-import create_test_set as cts
-from parameterizer import parameterize
-import pcap_to_csv as cv
-from tkinter import *
-from tkinter import filedialog
-from tkinter import ttk
-from tkinter.messagebox import showinfo
 import os
-import os.path
-import threading
+from PyQt5 import QtCore, QtGui, QtWidgets
+import time
+import math
 import csv
-import GUI_print as gp
+import h5py
+import configparser
+
+#  --------------- Components  ---------------
+import pcap_to_csv as ptc
+import train_test_creator as ttc
+# import normalize as norm
 import data_trimmer as dt
-import pandas as pd
-import parameterizer as pm
+# import parameterizer as param
+import parameterize_mal as pmal
+import multiclass_classification as multi
 
-#Initialize window and global variables
-win= Tk()
-outputname = StringVar()
-csvname = StringVar()
-outputname.set("Output:")
-csvname.set("CSV")
+#  ---------------  Global Variables  ---------------
+importedfile = ""
+lock = False
 
-#Resize window
-win.geometry("1920x1080")
-win.title("Network Traffic Alert Notification Pipeline​")
+settings = 0
+importedmodel = ""
 
-#clear output window
-def clear_output(event=None):
-   output.configure(state='normal')
-   output.delete(1.0, END)
-   output.configure(state='disabled')
+#  ---------------  User Config  ---------------
+config = configparser.ConfigParser()
+#If config.ini does not exist, create it
+if not os.path.exists('config.ini'):
+    config['settings'] = {'type': '0', 'model': 'Default'}
+    config.write(open('config.ini', 'w'))
+    settings = int(config.get('settings', 'type'))
+    importedmodel = config.get('settings', 'model')
+else:
+    try:
+        config.read('config.ini')
+        settings = int(config.get('settings', 'type'))
+        importedmodel = config.get('settings', 'model')
+    except:
+        #This occurs when the format of the config file is incorrect or outdated
+        config['settings'] = {'type': '0', 'model': 'Default'}
+        config.write(open('config.ini', 'w'))
+        settings = int(config.get('settings', 'type'))
+        importedmodel = config.get('settings', 'model')
+        print("Error reading config file, most likely format is incorrect. File has been deleted and replaced with default settings")
 
-#CSV file importer
-def import_CSV(event=None):
-   global filenameCSV
-   filenameCSV = filedialog.askopenfilename()
-   filenameCSV = os.path.basename(filenameCSV)
+#  ---------------  CSS Stylesheet  ---------------
+style = """
+            QPushButton {
+                background-color: #AFC1CC;
+                border-width: 0px;
+                border-radius: 4px;
+                }
+            QPushButton:hover{
+                background-color: #7895A2;
+            }
+            QPushButton:pressed{
+                background-color: #517281;
+            }
+            QTableView {
+                selection-background-color: #517281;
+            }
+            QScrollBar {
+                background-color: #AFC1CC;
+            }
+            QProgressBar {
+                border: solid grey;
+                border-radius: 8px;
+                color: black;
+            }
+            QProgressBar::chunk {
+                background-color: #05B8CC;
+                border-radius: 8px;
+            }
+            QSpinBox {
+                border: 0px;
+                border-radius: 4px;
+                background-color: #CCD7DF;
+            }
+            QSpinBox:hover {
+                background-color: #AFC1CC;
+            }
+            QComboBox {
+                border: 0px;
+                border-radius: 4px;
+                background-color: #CCD7DF;
+            }
+            QComboBox:hover {
+                background-color: #AFC1CC;
+            }
+            QComboBox QAbstractItemView {
+                selection-background-color: #517281;
+            }
+        """
 
-   #Detects if the file is a CSV or not
-   filetype = filenameCSV[-4:]
-   if filetype == ".csv":
-      gp.print(output, '\nSelected CSV file:')
-      gp.print(output, filenameCSV)
-      return 0
-   else:
-      gp.print(output, '\nFile is not a CSV')
-      return 1
+#  ---------------  Program  ---------------
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-#Convert to PCAP
-def convert_pcap(event=None):
-   global filename
-   filename = filedialog.askopenfilename()
-   filename = os.path.basename(filename)
-   filetype = filename[-5:]
-   #Detects if the file is a PCAP or not.
-   if filetype == ".pcap":
-      outputname.set("Output: Converting PCAP to CSV...")
-      clear_output()
-      gp.print(output, '\nStarting Conversion...')
-      curr_csv = cv.convert(output, filename)
-      show_csv(curr_csv)
-      outputname.set("Output:")
-   else:
-      gp.print(output, '\nFile is not a PCAP')
+        #Initialize buttons, labels, etc
+        self.setAcceptDrops(True)
+        self.setFixedSize(1000, 800)
+        self.setStyleSheet(style)
+        fnt = QtGui.QFont('Georgia', 14)
+        fntb = QtGui.QFont('Georgia', 16)
+        fntb.setBold(True)
+        self.ddboarder = QtWidgets.QPushButton(self)
+        self.ddboarder.setGeometry(QtCore.QRect(20, 20, 820, 156))
+        self.ddboarder.setStyleSheet("background-color: white; border: 3px black; border-radius: 10px; border-style: dashed")
+        self.bStart = QtWidgets.QPushButton(self)
+        self.bStart.setGeometry(QtCore.QRect(439, 120, 1, 1))
+        self.bStart.setFont(fntb)
+        self.bStart.setStyleSheet("QPushButton {background-color: #ACD2C3;border-width: 0px;border-radius: 4px;}QPushButton:hover{background-color: #89B0A1;}QPushButton:pressed{background-color: #59756A;}")
+        self.bStart.setHidden(True)
+        self.bFile = QtWidgets.QPushButton(self)
+        self.bFile.setGeometry(QtCore.QRect(294, 81, 160, 36))
+        self.bFile.setFont(fnt)
+        self.bSettings = QtWidgets.QPushButton(self)
+        self.bSettings.setGeometry(QtCore.QRect(860, 60, 120, 36))
+        self.bSettings.setFont(fnt)
+        self.bHelp = QtWidgets.QPushButton(self)
+        self.bHelp.setGeometry(QtCore.QRect(860, 20, 120, 36))
+        self.bHelp.setFont(fnt)
+        self.bCSV = QtWidgets.QPushButton(self)
+        self.bCSV.setGeometry(QtCore.QRect(860, 140, 120, 36))
+        self.bCSV.setFont(fnt)
+        self.progressBar = QtWidgets.QProgressBar(self)
+        self.progressBar.setGeometry(QtCore.QRect(520, 184, 450, 20))
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setFont(QtGui.QFont('Times', 12))
+        self.progressBar.setAlignment(QtCore.Qt.AlignCenter)
+        self.progressBar.setHidden(True)
+        self.label = QtWidgets.QLabel('NULL', self)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.resize(700, 80)
+        self.label.move(88, 60)
+        self.label.setFont(fntb)
+        self.label.setHidden(True)
+        self.label2 = QtWidgets.QLabel('or drop it here', self)
+        self.label2.resize(200, 30)
+        self.label2.move(460, 84)
+        self.label2.setFont(fnt)
+        self.label3 = QtWidgets.QLabel('NULL', self)
+        self.label3.resize(200, 30)
+        self.label3.move(22, 180)
+        self.label3.setHidden(True)
+        self.label3.setFont(fnt)
+        self.table = QtWidgets.QTableView(self)
+        self.table.setGeometry(QtCore.QRect(20, 210, 960, 570))
+        self.table.horizontalHeader().setHidden(True)
+        self.table.verticalHeader().setHidden(True)
+        self.table.verticalHeader().setDefaultSectionSize(18)
+        self.table.setFont(QtGui.QFont('Times', 12))
+        self.model = QtGui.QStandardItemModel(self)
+        self.table.setModel(self.model)
+        self.table.setHidden(True)
 
-#Create test set
-def create_set(event=None):
-   if import_CSV()==0:
-      outputname.set("Output: Creating test set")
-      clear_output()
-      gp.print(output, '\nCreating Test Set...')
-      curr_csv = cts.digest_file(filenameCSV, output)
-      show_csv(curr_csv)
-      outputname.set("Output:")
+        #Initialize animations
+        self.anim1 = QtCore.QPropertyAnimation(self.bFile, b"pos")
+        self.anim1.setEndValue(QtCore.QPoint(294, 34))
+        self.anim1.setDuration(200)
+        self.anim1.setEasingCurve(QtCore.QEasingCurve.OutCubic)
+        self.anim2 = QtCore.QPropertyAnimation(self.label2, b"pos")
+        self.anim2.setEndValue(QtCore.QPoint(460, 37))
+        self.anim2.setDuration(200)
+        self.anim2.setEasingCurve(QtCore.QEasingCurve.OutCubic)
+        self.anim3 = QtCore.QPropertyAnimation(self.bStart, b"size")
+        self.anim3.setEndValue(QtCore.QSize(270, 80))
+        self.anim3.setDuration(200)
+        self.anim3.setEasingCurve(QtCore.QEasingCurve.OutCubic)
+        self.anim4 = QtCore.QPropertyAnimation(self.bStart, b"pos")
+        self.anim4.setEndValue(QtCore.QPoint(304, 80))
+        self.anim4.setDuration(200)
+        self.anim4.setEasingCurve(QtCore.QEasingCurve.OutCubic)
+        self.anim5 = QtCore.QPropertyAnimation(self.ddboarder, b"size")
+        self.anim5.setEndValue(QtCore.QSize(850, 186))
+        self.anim5.setDuration(200)
+        self.anim5.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
+        self.anim6 = QtCore.QPropertyAnimation(self.ddboarder, b"pos")
+        self.anim6.setEndValue(QtCore.QPoint(5, 5))
+        self.anim6.setDuration(200)
+        self.anim6.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
+        self.anim7 = QtCore.QPropertyAnimation(self.ddboarder, b"size")
+        self.anim7.setEndValue(QtCore.QSize(820, 156))
+        self.anim7.setDuration(200)
+        self.anim7.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
+        self.anim8 = QtCore.QPropertyAnimation(self.ddboarder, b"pos")
+        self.anim8.setEndValue(QtCore.QPoint(20, 20))
+        self.anim8.setDuration(200)
+        self.anim8.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
 
-#Trim Data Set
-def trim_dataset(event=None):
-   if import_CSV()==0:
-      outputname.set("Output: Trimming Data Set")
-      clear_output()
-      gp.print(output, '\nTrimming Data Set...')
-      curr_csv = dt.trim(filenameCSV, output)
-      show_csv(curr_csv)
-      outputname.set("Output:")
+        #Finish setting up GUI
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
 
-#Parameterize
-def parameterize(event=None):
-   if import_CSV()==0:
-      outputname.set("Output: Parameterizing")
-      clear_output()
-      gp.print(output, '\nParameterizing converted dataset...')
-      curr_csv = pm.parameterize(filenameCSV, output)
-      show_csv(curr_csv)
-      outputname.set("Output:")
+    def retranslateUi(self):
+        _translate = QtCore.QCoreApplication.translate
+        self.setWindowTitle(_translate("MainWindow", "Network Traffic Alert Notification Pipeline"))
+        self.bSettings.setText(_translate("MainWindow", "Settings"))
+        self.bSettings.clicked.connect(self.openSettings)
+        self.bHelp.setText(_translate("MainWindow", "Help"))
+        self.bHelp.clicked.connect(self.openHelp)
+        self.bStart.setText(_translate("MainWindow", "Start"))
+        self.bStart.clicked.connect(self.startProcess)
+        self.bFile.setText(_translate("MainWindow", "Choose PCAP file"))
+        self.bFile.clicked.connect(self.openFile)
+        self.bCSV.setText(_translate("MainWindow", "Display CSV"))
+        self.bCSV.clicked.connect(self.openCSV)
 
-def show_help(event=None):
-   showinfo(title='Using the GUI', message="PCAP to CSV Pipeline:\n1. Click PCAP->CSV and select the PCAP file you wish to convert.\n2. Click Parameterize and select the converted CSV file to change all strings to integers.\n\nTest Set Pipeline:\n1. Click Trim Data Set and select the CSV file you wish to trim.\n2. Click CSV->Test Set and select the CSV file to create a test set. (must be parameterized)")
+    #Open help menu
+    def openHelp(self):
+        dlg = QtWidgets.QMessageBox(self)
+        dlg.setWindowTitle("How to use the Network Alert Pipeline")
+        dlg.setText("1. Click Select File and choose a valid PCAP file to analyze\n2. Click START\n\nClick Settings to change algorithm type and create new training data")
+        dlg.setStyleSheet("QPushButton {border-radius: 2px; width: 60px; height: 20px;}")
+        button = dlg.exec()
 
-#CSV view
-def show_csv(csvfile):
-   csvname.set("CSV: "+str(csvfile))
-   TableMargin = Frame(win, width=16)
-   TableMargin.place(x=600, y=60)
-   scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
-   scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
-   tree = ttk.Treeview(TableMargin, columns=("ip src", "port src", "ip dest", "port dest", "protocol", "active time", "bytes", "live time", "src tcp bsn", "tcp cst", "mal packet type", "is mal?"), height=41, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
-   scrollbary.config(command=tree.yview)
-   scrollbary.pack(side=RIGHT, fill=Y)
-   scrollbarx.config(command=tree.xview)
-   scrollbarx.pack(side=BOTTOM, fill=X)
-   tree.heading('ip src', text="ip src", anchor=W)
-   tree.heading('port src', text="port src", anchor=W)
-   tree.heading('ip dest', text="ip dest", anchor=W)
-   tree.heading('port dest', text="port dest", anchor=W)
-   tree.heading('protocol', text="protocol", anchor=W)
-   tree.heading('active time', text="active time", anchor=W)
-   tree.heading('bytes', text="bytes", anchor=W)
-   tree.heading('live time', text="live time", anchor=W)
-   tree.heading('src tcp bsn', text="src tcp bsn", anchor=W)
-   tree.heading('tcp cst', text="tcp cst", anchor=W)
-   tree.heading('mal packet type', text="mal packet type", anchor=W)
-   tree.heading('is mal?', text="is mal?", anchor=W)
-   tree.column('#0', stretch=NO, minwidth=0, width=0)
-   tree.column('#1', stretch=NO, minwidth=0, width=100)
-   tree.column('#2', stretch=NO, minwidth=0, width=60)
-   tree.column('#3', stretch=NO, minwidth=0, width=100)
-   tree.column('#4', stretch=NO, minwidth=0, width=60)
-   tree.column('#5', stretch=NO, minwidth=0, width=80)
-   tree.column('#6', stretch=NO, minwidth=0, width=100)
-   tree.column('#7', stretch=NO, minwidth=0, width=60)
-   tree.column('#8', stretch=NO, minwidth=0, width=60)
-   tree.column('#9', stretch=NO, minwidth=0, width=100)
-   tree.column('#10', stretch=NO, minwidth=0, width=60)
-   tree.column('#11', stretch=NO, minwidth=0, width=100)
-   tree.pack()
+    #Open settings menu
+    def openSettings(self):
+        global lock
+        if lock == False:
+            lock = True
+            print("OPEN SETTINGS MENU")
+            SettingsWindow.show(Sui)
 
-   with open(csvfile) as f:
-      reader = csv.reader(f, delimiter=',')
-      for row in reader:
-         tree.insert("", 0, values=row)
+    #Start main algorithm with importedfile
+    def startProcess(self):
+        global lock
+        if lock == False:
+            if os.path.isfile(importedfile):
+                lock=True
+                print("STARTING WITH FILE:", importedfile)
+                basename = os.path.basename(importedfile)
+                self.label2.setHidden(True)
+                self.bFile.setHidden(True)
+                self.bStart.setHidden(True)
+                self.label.setText("Analyzing "+basename)
+                self.label.setHidden(False)
+                self.progressBar.setHidden(False)
 
-#Create labels and divider line
-Label(win, text= "Network Traffic Alert Notification Pipeline​ GUI").pack(pady= 10)
-Label(win, text= "PCAP to CSV Pipeline").place(x=30, y=40)
-Label(win, text= "Test Set Pipeline").place(x=250, y=40)
-Label(win, textvariable= str(outputname)).place(x=30, y=184)
-Label(win, textvariable= str(csvname)).place(x=600, y=40)
-seperator=ttk.Separator(win, orient='vertical')
-seperator.place(x=210,y=44,height=120)
+                # PCAP to CSV converter
+                print("BASE: ", basename)
+                curr_file = ptc.convert(basename, self)
+                curr_file = multi.saved_weights(curr_file, os.path.basename(importedmodel), self)
 
-#Create buttons
-ttk.Button(win, text= "Convert PCAP->CSV", command=convert_pcap).place(x=30, y=70,height=40)
-ttk.Button(win, text= "Parameterize", command=parameterize).place(x=30, y=120,height=40)
-ttk.Button(win, text= "Trim Data Set", command=trim_dataset).place(x=250, y=70,height=40)
-ttk.Button(win, text= "CSV->Test Set", command=create_set).place(x=250, y=120,height=40)
-ttk.Button(win, text= "Help", command=show_help).place(x=30, y=5,height=25)
+                #TRIGGERS AFTER PROCESS IS COMPLETE
+                self.progressBar.setHidden(True)
+                self.progressBar.setProperty("value", 0)
+                self.label2.move(460, 84)
+                self.label2.setText("or drop it here")
+                self.label2.setHidden(False)
+                self.bFile.move(294, 81)
+                self.bFile.setHidden(False)
+                self.bStart.move(439, 120)
+                self.bStart.resize(1, 1)
+                self.label.setHidden(True)
+                #self.updateMessage(self, 100, "Displaying CSV in GUI")
+                self.showCSV(curr_file)
+                lock = False
+            else:
+                print("NO FILE SELECTED, cannot start process")
 
-#Output window
-output = Text(win, state = 'disabled', width=80, height=53)
-output.place(x=30, y=204)
+    #Open file dialog for main PCAP file
+    def openFile(self):
+        if lock == False:
+            global importedfile
+            importedfileX = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select a PCAP file',directory=os.getcwd(), filter='PCAP File (*.pcap)')
+            importedfileX = importedfileX[0]
+            if os.path.isfile(importedfileX):
+                importedfile = importedfileX
+                self.acceptImport()
+            else:
+                print("No file or invalid file selected")
 
-#Start GUI
-win.mainloop()
+    #Drag and drop functionality
+    def dragEnterEvent(self, event):
+        if lock == False:
+            data = event.mimeData()
+            urls = data.urls()
+            if urls and urls[0].scheme() == 'file':
+                event.accept()
+                self.anim5.start()
+                self.anim6.start()
+            else:
+                event.ignore()
+
+    def dropEvent(self, event):
+        if lock == False:
+            data = event.mimeData()
+            urls = data.urls()
+            if urls and urls[0].scheme() == 'file':
+                self.anim7.start()
+                self.anim8.start()
+                importedfileX = str(urls[0].path())[1:]
+                if importedfileX[-5:].upper() == ".PCAP":
+                    global importedfile
+                    importedfile = importedfileX
+                    self.acceptImport()
+                else:
+                    print("Invalid file selected")
+
+    def dragLeaveEvent(self, event):
+        self.anim7.start()
+        self.anim8.start()
+
+    #Selected PCAP file is accepted as valid
+    def acceptImport(self):
+        print("Imported file:", importedfile)
+        self.bStart.setHidden(False)
+        self.label2.setText(os.path.basename(importedfile))
+        self.anim1.start()
+        self.anim2.start()
+        self.anim3.start()
+        self.anim4.start()
+
+    #Open file dialog for CSV display
+    def openCSV(self):
+        if lock == False:
+            importedCSV = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select a CSV file',directory=os.getcwd(), filter='CSV File (*.csv)')
+            importedCSV = importedCSV[0]
+            if os.path.isfile(importedCSV):
+                print("Imported CSV:", importedCSV)
+                self.showCSV(importedCSV)
+            else:
+                print("No file or invalid file selected")
+
+    #Updates progress bar with a new value
+    def updateBar(self, goto):
+        cur = self.progressBar.value()
+        while cur < goto:
+            cur = cur + math.ceil((goto - cur) / 10)
+            self.progressBar.setProperty("value", cur)
+            time.sleep(0.03)
+
+    #Display CSV in table
+    def showCSV(self, filename):
+        self.model.clear()
+        with open(filename, 'r') as f:
+            try:
+
+                for row in csv.reader(open(filename, "r")):
+                    items = [
+                        QtGui.QStandardItem(str(field))
+                        for field in row
+                    ]
+            
+                    self.model.appendRow(items)
+                    self.table.setHidden(False)
+                    self.label3.setText(os.path.basename(filename)+":")
+                    self.label3.setHidden(False)
+
+                    # TODO: Print to GUI instead of terminal
+            except: print("CSV could not be sent to window.")
+
+class SettingsWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        #Initialize buttons, labels, etc
+        self.setFixedSize(400, 170)
+        self.setStyleSheet(style)
+        fnt = QtGui.QFont('Georgia', 12)
+        fntb = QtGui.QFont('Georgia', 16)
+        fntb.setBold(True)
+        self.bHelp = QtWidgets.QPushButton(self)
+        self.bHelp.setGeometry(QtCore.QRect(280, 10, 100, 36))
+        self.bHelp.setFont(fnt)
+        self.bTrain = QtWidgets.QPushButton(self)
+        self.bTrain.setGeometry(QtCore.QRect(220, 100, 160, 36))
+        self.bTrain.setFont(fnt)
+        self.bCreate = QtWidgets.QPushButton(self)
+        self.bCreate.setGeometry(QtCore.QRect(220, 60, 160, 36))
+        self.bCreate.setFont(fnt)
+        self.bModel = QtWidgets.QPushButton(self)
+        self.bModel.setGeometry(QtCore.QRect(20, 60, 180, 54))
+        self.bModel.setFont(fnt)
+        self.type = QtWidgets.QComboBox(self)
+        self.type.addItem("Binary")
+        self.type.addItem("Multiclass")
+        self.type.setCurrentIndex(settings)
+        self.type.resize(110, 36)
+        self.type.move(150, 10)
+        self.type.setFont(fnt)
+        self.model = QtWidgets.QLabel('Model: '+os.path.basename(os.path.splitext(importedmodel)[0]), self)
+        self.model.resize(180, 30)
+        self.model.move(20, 114)
+        self.model.setFont(fnt)
+        l = QtWidgets.QLabel('Algorithm Type:', self)
+        l.resize(120, 36)
+        l.move(20, 10)
+        l.setFont(fnt)
+        l = QtWidgets.QLabel('Network Traffic Alert Notification Pipeline - Version: 1.2.1', self)
+        l.resize(380, 30)
+        l.move(20, 146)
+        l.setFont(QtGui.QFont('Georgia', 10))
+        self.wait = QtWidgets.QPushButton(self)
+        self.wait.setGeometry(QtCore.QRect(0, 0, 400, 170))
+        self.wait.setFont(fntb)
+        self.wait.setStyleSheet("background-color: rgba(255, 255, 255, 180);border-width: 0px;border-radius: 0px;")
+        self.wait.setHidden(True)
+
+        #Finish setting up GUI
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        global settings
+        _translate = QtCore.QCoreApplication.translate
+        self.setWindowTitle(_translate("SettingsWindow", "Pipeline Settings"))
+        self.bHelp.setText(_translate("SettingsWindow", "Help"))
+        self.bHelp.clicked.connect(self.openHelp)
+        self.bCreate.setText(_translate("SettingsWindow", "Create Training Data"))
+        self.bCreate.clicked.connect(self.openFile0)
+        self.bTrain.setText(_translate("SettingsWindow", "Retrain Algorithm"))
+        self.bTrain.clicked.connect(self.openFile)
+        self.bModel.setText(_translate("SettingsWindow", "Import Model"))
+        self.bModel.clicked.connect(self.openModel)
+        self.type.currentIndexChanged.connect(self.save)
+        self.wait.setText(_translate("SettingsWindow", "Working...\nPlease wait"))
+
+    #User closes settings menu
+    def closeEvent(self, event):
+        global lock
+        lock = False
+
+    #Import 3 CSV s to retrain algorithm
+    def openFile(self):
+        self.wait.setHidden(False)
+        importedfile1 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TRAINING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile2 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select TESTING Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile3 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select VALIDATION Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile1 = importedfile1[0]
+        importedfile2 = importedfile2[0]
+        importedfile3 = importedfile3[0]
+        if os.path.isfile(importedfile1) & os.path.isfile(importedfile2) & os.path.isfile(importedfile3):
+            #Show string input dialog for model name
+            savename, done1 = QtWidgets.QInputDialog.getText(self, 'Save File', 'Enter desired output HDF5 file name:')
+            if done1 and savename != '':
+                savename=savename+".h5"
+                print("RETRAINING ALGORITHM, savename = "+savename)
+                multi.determine_mal_packets(importedfile1, importedfile3, importedfile2, settings, savename)
+                self.wait.setHidden(True)
+            else:
+                print("Operation cancelled / Invalid name entry")
+                self.wait.setHidden(True)
+        else:
+            print("No file(s) or invalid file(s) selected")
+            self.wait.setHidden(True)
+
+    #Import a CSV file to create training data
+    def openFile0(self):
+        self.wait.setHidden(False)
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select New Data',directory=os.getcwd(), filter='CSV File (*.csv)')
+        importedfile0 = importedfile0[0]
+        if os.path.isfile(importedfile0):
+            #Show integer input dialog for packet count
+            packetcount, done1 = QtWidgets.QInputDialog.getInt(self, 'Packet Count', 'Enter total number of packets in datasets combined:')
+            if done1 and packetcount > 0:
+                columnval, done2 = QtWidgets.QInputDialog.getInt(self, 'Column Number', 'Enter index of column that contains classes AFTER the dataset is trimmed (columns start at 0):')
+                if done2 and columnval >= 0:
+                    print("CREATING TRAINING DATA")
+                    time.sleep(0)
+                    training_data = dt.trim(os.path.basename(importedfile0))
+                    training_data = ttc.determine_packet_allocation(training_data, packetcount, columnval)
+                    training_data = pmal.change(training_data)
+                    # TODO: might normalize data
+                    self.wait.setHidden(True)
+                else:
+                    print("Operation cancelled / Invalid column index")
+                    self.wait.setHidden(True)
+            else:
+                print("Operation cancelled / Invalid packet count")
+                self.wait.setHidden(True)
+        else:
+            print("No file or invalid file selected")
+            self.wait.setHidden(True)
+
+    #Import h5 model file
+    def openModel(self):
+        importedfile0 = QtWidgets.QFileDialog.getOpenFileName(parent=self, caption='Select algorithm model', directory=os.getcwd(), filter='HDF5 File (*.h5)')
+        importedfile0 = importedfile0[0]
+        if os.path.isfile(importedfile0):
+            global importedmodel
+            importedmodel = importedfile0
+            config['settings'] = {'type': str(settings), 'model': importedmodel}
+            config.write(open('config.ini', 'w'))
+            self.model.setText('Model: '+os.path.basename(os.path.splitext(importedmodel)[0]))
+            print("IMPORTED NEW MODEL, and saved config")
+        else:
+            print("No file or invalid file selected")
+
+    #Save settings to ini file
+    def save(self):
+        global settings
+        settings = self.type.currentIndex()
+        config['settings'] = {'type': str(settings), 'model': importedmodel}
+        config.write(open('config.ini', 'w'))
+        print("SETTINGS SAVED:", settings)
+
+    #Open help menu
+    def openHelp(self):
+        dlg = QtWidgets.QMessageBox(self)
+        dlg.setWindowTitle("Settings Help")
+        dlg.setText("-Algorithm type-\nBINARY: Relies on two classes.\nMULTICLASS: Can rely on more than two classes.\n\n-Model-\nThe model is used to make predictions in the algorithm\nTo import a new model, click Import Model and select a valid HDF5 file\n\n-Training Data-\nTo create new training data, click Create Training Data and select csv files for training data, testing data, and validation data.\nTo train the algorithm with new data, click Retrain Algorithm and choose the newly created training data")
+        dlg.setStyleSheet("QPushButton {border-radius: 2px; width: 60px; height: 20px;}")
+        button = dlg.exec()
+
+    #Update label text
+    def updateMessage(self, progress, message):
+        self.label.setText(message)
+        self.updateBar(progress)
+
+#Driver code
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    ui = MainWindow()
+    Sui = SettingsWindow()
+    MainWindow.show(ui)
+    sys.exit(app.exec_())
