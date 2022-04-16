@@ -255,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 # PCAP to CSV converter
                 print("BASE: ", basename)
                 curr_file = ptc.convert(basename, self)
-                # curr_file = multi.saved_weights(curr_file, os.path.splitext(importedmodel)[0], self)
+                curr_file = multi.saved_weights(curr_file, os.path.basename(importedmodel), self)
 
                 #TRIGGERS AFTER PROCESS IS COMPLETE
                 self.progressBar.setHidden(True)

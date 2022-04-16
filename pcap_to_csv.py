@@ -18,6 +18,7 @@ from pyshark import tshark
 import platform
 import GUI
 import pandas as pd
+import data_trimmer as dt
 
 # Function that converts pcap to csv
 def convert(in_file, gui_self):
@@ -30,7 +31,7 @@ def convert(in_file, gui_self):
   # Run this command if on Linux
   if platform.system() == "Linux":
     # Using TShark to extract the PCAP parameters
-    os.system('tshark -r ' + in_file + ' -T fields -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport -e _ws.col.Protocol -e frame.time_relative -e tcp.analysis.bytes_in_flight -e ip.ttl -e tcp.seq -e tcp.ack -E separator=,> '+ out_file) #Uses command line argument to read in the PCAP
+    os.system('tshark -r ' + in_file + ' -T fields -e ip.src -e tcp.srcport -e ip.dst -e tcp.dstport -e _ws.col.Protocol -e frame.time_relative -e frame.len -e ip.ttl -e tcp.seq -e tcp.ack -E separator=,> '+ out_file) #Uses command line argument to read in the PCAP
 
   # Run this command if on Windows
   elif platform.system() == "Windows":
@@ -46,26 +47,11 @@ def convert(in_file, gui_self):
   # Pandas Import CSV to remove null values and add column headers
   ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
   ds.fillna(value = 0, inplace = True)
-  # ds.columns = [
-  #               "srcport",      # 2
-  #               "dstport",      # 4
-  #               "timerel",      # 7
-  #               "srctranbytes", # 8
-  #               "timetolive",   # 10
-  #               "srctcp",       # 21
-  #               "setupackack"]  # 35
 
-  ds.columns = [
-                "srcip",        # 1
-                "srcport",      # 2
-                "dstip",        # 3
-                "dstport",      # 4
-                "protocol",      # 5
-                "timerel",      # 7
-                "srctranbytes", # 8
-                "timetolive",   # 10
-                "srctcp",       # 21
-                "setupackack"]  # 35
+  # Getting column names
+  ds.columns = dt.get_cols(False)
+
+  # Outputting file to csv
   ds.to_csv(out_file, index=False)
 
   return out_file
@@ -83,5 +69,3 @@ def convert(in_file, gui_self):
     # 10. TCP connection setup time, the time between the SYN_ACK and the ACK packets 35
 
   # Ignore Columns: 48, 49
-
-#convert("split.pcap", 0)

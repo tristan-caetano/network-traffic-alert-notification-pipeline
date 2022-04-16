@@ -25,8 +25,9 @@ def change(input):
         # Pandas Import CSV
         df = pd.read_csv(files, low_memory=False)
 
+        # Original packets
+        # df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', 'DoS', 'Generic', ' Fuzzers', 'Shellcode', 'Worms', 'Backdoors', 'Analysis'],['0','1', '2', '2', '3', '4', '5', '6', '7', '8', '9'])
         df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', ' Reconnaissance ', 'DoS', 'Generic', ' Fuzzers'],['0','1', '2', '2', '2', '3', '4', '5'])
-        #df['malname'] = df['malname'].replace([pd.NA,'Exploits', 'Reconnaissance','Reconnaissance ', 'DoS', 'Generic', ' Fuzzers', 'Shellcode', 'Worms', 'Backdoors', 'Analysis'],['0','1', '2', '2', '3', '4', '5', '6', '7', '8', '9'])
 
         # Saving file names to be returned and exporting files
         outputs[count] = "p_" + files
@@ -34,7 +35,3 @@ def change(input):
         count += 1
 
     return outputs
-
-# change("training.csv")
-# change("validation.csv")
-# change("testing.csv")

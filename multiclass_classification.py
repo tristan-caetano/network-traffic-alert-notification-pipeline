@@ -17,6 +17,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import GUI
+import data_trimmer as dt
 
 #  ---------------  Start of Algorithm  ---------------
 
@@ -37,7 +38,7 @@ def build_model(multi):
     model_2 = tf.keras.Sequential([
         
         # Input Layer (7 Columns)
-        tf.keras.layers.Dense(18, input_shape = (16,), activation=activationm), 
+        tf.keras.layers.Dense(5, input_shape = (5,), activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
@@ -121,28 +122,29 @@ def saved_weights(converted_set, model, gui_self):
     # Taking in the data as a dataframe
     #test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-8")
     GUI.SettingsWindow.updateMessage(gui_self, 40, "Loading converted set into algorithm")
-    test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-16")
-    test.columns = [
-                "srcport",      # 2
-                "dstport",      # 4
-                "timerel",      # 7
-                "srctranbytes", # 8
-                "timetolive",   # 10
-                "dsttosrc",     # 18
-                "srcwindow",    # 19
-                "dstwindow",    # 20
-                "srctcp",       # 21
-                "dstseq",       # 22
-                "srcmean",      # 23
-                "setupround",   # 33
-                "setupsynack",  # 34
-                "setupackack",  # 35
-                "ifequal",      # 36
-                "malname",      # 48 
-                "ismal" ]       # 49
+
+    try:
+        test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-8")
+    except:
+        test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-16")
 
     # Dropping binary and multiclass classification columns for testing set
     #test = test.drop(['malname','ismal'], axis=1)
+
+    temp_hold = test[[
+                "srcip",          # 1
+                "srcport",        # 2
+                "dstip",          # 3
+                "dstport",        # 4
+                "protocol"        # 5
+                ]]
+    test = test.drop([
+                "srcip",          # 1
+                "srcport",        # 2
+                "dstip",          # 3
+                "dstport",        # 4
+                "protocol"        # 5
+                ], axis = 1)
     
     # Saving predictions to a variable
     GUI.SettingsWindow.updateMessage(gui_self, 50, "Making predictions on converted set")
@@ -152,6 +154,7 @@ def saved_weights(converted_set, model, gui_self):
     GUI.SettingsWindow.updateMessage(gui_self, 75, "Saving predictions to file")
     get_test = np.argmax(test_predictions, axis = 1)
     test['predictions'] = get_test
+    test = pd.concat([temp_hold, test], axis = 1)
     outfile = "predicted_" + converted_set
 
     # Saving the dataframe containing the predictions to a csv

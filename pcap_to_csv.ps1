@@ -1,3 +1,14 @@
+# Network Traffic Alert Notification Pipeline Project MVP 
+# University of Massachusetts Dartmouth
+# Naval Undersea Warfare Center
+
+# Client: Benjamin Drozdenko
+# Team Lead: Tristan Caetano
+# Scrum Master: Jake Holme
+# Vinicius Coelho: Project Coordinator
+# Lead Developer: Jason Pinto
+# Developer: Tate DeTerra
+
 # Powershell script that is run from pcap_to_csv.py if the GUI is being run on windows    
     
     # Taking in the names of the input pcap and output csv
