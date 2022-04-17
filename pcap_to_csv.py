@@ -45,7 +45,11 @@ def convert(in_file, gui_self):
   # converted through Windows, the .csv output has utf-16 encoding.  
 
   # Pandas Import CSV to remove null values and add column headers
-  ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
+  try:
+    ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-8")
+  except:
+    ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
+
   ds.fillna(value = 0, inplace = True)
 
   # Getting column names
