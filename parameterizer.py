@@ -10,6 +10,8 @@
 # Developer: Tate DeTerra
 
 # Changes selected string values in dataset to integers, can be expanded easily
+# THIS FILE IS CURRENTLY NOT BEING USED WITHIN THE PIPELINE
+# IT HAS BEEN REPLACED WITH parameterize_mal.py
 
 #  ---------------  Libraries  ---------------
 import numpy as np
