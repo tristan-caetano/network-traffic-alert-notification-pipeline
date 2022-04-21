@@ -17,22 +17,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import time
 import math
 import csv
-import h5py
 import configparser
 
 #  --------------- Components  ---------------
 import pcap_to_csv as ptc
 import train_test_creator as ttc
-# import normalize as norm
+import normalize as norm
 import data_trimmer as dt
-# import parameterizer as param
 import parameterize_mal as pmal
 import multiclass_classification as multi
 
 #  ---------------  Global Variables  ---------------
 importedfile = ""
 lock = False
-
 settings = 0
 importedmodel = ""
 
@@ -111,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        #Initialize buttons, labels, etc
+        #Initialize buttons, labels, and other graphical objects
         self.setAcceptDrops(True)
         self.setFixedSize(1000, 800)
         self.setStyleSheet(style)
@@ -253,11 +250,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.progressBar.setHidden(False)
 
                 # PCAP to CSV converter
-                print("BASE: ", basename)
                 curr_file = ptc.convert(basename, self)
-                curr_file = multi.saved_weights(curr_file, os.path.basename(importedmodel), self)
+                copy_file = curr_file
+                curr_file = norm.digest_file(curr_file, self)
+                curr_file = multi.saved_weights(curr_file, copy_file, os.path.basename(importedmodel), self)
 
-                #TRIGGERS AFTER PROCESS IS COMPLETE
+                #Conversion Complete
                 self.progressBar.setHidden(True)
                 self.progressBar.setProperty("value", 0)
                 self.label2.move(460, 84)
@@ -268,7 +266,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.bStart.move(439, 120)
                 self.bStart.resize(1, 1)
                 self.label.setHidden(True)
-                #self.updateMessage(self, 100, "Displaying CSV in GUI")
                 self.showCSV(curr_file)
                 lock = False
             else:
@@ -362,15 +359,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.table.setHidden(False)
                     self.label3.setText(os.path.basename(filename)+":")
                     self.label3.setHidden(False)
-
-                    # TODO: Print to GUI instead of terminal
             except: print("CSV could not be sent to window.")
 
 class SettingsWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        #Initialize buttons, labels, etc
+        #Initialize buttons, labels, and other graphical objects
         self.setFixedSize(400, 170)
         self.setStyleSheet(style)
         fnt = QtGui.QFont('Georgia', 12)
@@ -477,7 +472,10 @@ class SettingsWindow(QtWidgets.QMainWindow):
                     training_data = dt.trim(os.path.basename(importedfile0))
                     training_data = ttc.determine_packet_allocation(training_data, packetcount, columnval)
                     training_data = pmal.change(training_data)
-                    # TODO: might normalize data
+                    count = 0
+                    for file in training_data:
+                        training_data[0] = norm.digest_file(file, 0)
+                        count += 1
                     self.wait.setHidden(True)
                 else:
                     print("Operation cancelled / Invalid column index")

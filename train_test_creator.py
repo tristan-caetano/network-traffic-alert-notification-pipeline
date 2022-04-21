@@ -13,7 +13,6 @@
 
 #  ---------------  Libraries  ---------------
 import pandas as pd
-import numpy as np
 import data_trimmer as dt
 import math
 
@@ -37,7 +36,12 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     percentages = [training, testing, validation]
 
     # Pandas Import CSV
-    p_dataset = pd.read_csv(dataset, low_memory=False)
+    try:
+        p_dataset = pd.read_csv(dataset, low_memory=False, encoding= "utf-8")
+    except:
+        p_dataset = pd.read_csv(dataset, low_memory=False, encoding= "utf-16")
+
+    # Getting columns to fill in                                   
     p_dataset.columns = dt.get_cols(True)
 
     # Prints number and names of unique values in malicious packet index
@@ -64,7 +68,6 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
     # Initializing index
     x = 0
 
-    print("Getting all mal packets")
     # An while loop that fills amt_of_each_packets with the packets that are needed
     while x < len(p_dataset):
 
@@ -98,31 +101,28 @@ def determine_packet_allocation(dataset, num_of_packets, class_column):
         # Incrementing index
         x += 1
 
-    
-    print(amt_of_each_mal)
-
     # Sending data to be split into csvs
     create_data_sets(amt_of_each_mal, percentages, outputs)
 
     return outputs
 
-#
+# Creating each file
 def create_data_sets(amt_of_each_mal, percentages, outputs):
-    
-    print("Splitting datasets")
 
     # 1: training 64%, 2: validation 16%, 3: testing 20%
     training_sets = [pd.DataFrame(columns=dt.get_cols(True))] * 3
     
+    # Initiating start point 3 datasets
     amt_per_df = [0] * len(amt_of_each_mal)
     starting_points = [0] * len(amt_of_each_mal)
 
+    # Getting lengths of datasets
     for z in range(len(amt_of_each_mal)):
 
         amt_per_df[z] = len(amt_of_each_mal[z])
 
+    # Filling the 3 datasets
     for a in range(len(training_sets)):
-        print("SetL ", a)
 
         for x in range(len(amt_of_each_mal)):
                 

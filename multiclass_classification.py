@@ -12,41 +12,33 @@
 # Algorithm that can determine malicious packets
 
 #  ---------------  Libraries  ---------------
-
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import parameterize_mal as pmal
 import GUI
-import data_trimmer as dt
 
 #  ---------------  Start of Algorithm  ---------------
-
 # This function builds the model.
 def build_model(multi):
 
     # Changing activation
     activationm = "softmax"
 
+    # Initializing layers variable
     layers = 0
 
+    # Setting layer count based on the type of algorithm
     if multi: layers = 6 
     else: layers = 1
-
-    print("Final Layer: ", layers)
 
     # Creating our model with Dense layers
     model_2 = tf.keras.Sequential([
         
-        # Input Layer (7 Columns)
+        # Input Layer (5 Columns) using softmax
         tf.keras.layers.Dense(5, input_shape = (5,), activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
-        tf.keras.layers.Dense(10, activation=activationm), 
+
+        # 10 hidden layers with 10 neurons using softmax
         tf.keras.layers.Dense(10, activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
@@ -58,16 +50,15 @@ def build_model(multi):
         tf.keras.layers.Dense(10, activation=activationm), 
         tf.keras.layers.Dense(10, activation=activationm), 
 
-        # Output Layer (6 classes)
+        # Output Layer Multi(6 classes), Binary(1 class)  softmax activation
         tf.keras.layers.Dense(layers, activation="softmax") # output shape is 10, activation is softmax
     ])
 
-    # Compiling the model
+    # Compiling the model based on the type of algorithm
     if multi:
         model_2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .001), metrics=['accuracy'])
     else:
-        model_2.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=tf.keras.optimizers.Adam(learning_rate = .001), metrics=['accuracy'])
-        print("Binary")
+        model_2.compile(loss=tf.keras.losses.BinaryCrossentropy(), optimizer=tf.keras.optimizers.SGD(learning_rate = .001), metrics=['accuracy'])
     
     return model_2
 
@@ -79,6 +70,7 @@ def determine_mal_packets(training_set, validation_set, testing_set, multi, outp
     v_p_dataset = pd.read_csv(validation_set, low_memory=False)
     test_p_dataset = pd.read_csv(testing_set, low_memory=False)
 
+    # Setting class column depending on the algorithm type
     if multi:
         # Saving multiclass classification column to variable.
         class_df = p_dataset['malname']
@@ -113,57 +105,51 @@ def determine_mal_packets(training_set, validation_set, testing_set, multi, outp
 
 # This function takes in the testing data or converted set and saved model to make predictions
 # Outputs the input CSV set with additional column containing predictions
-def saved_weights(converted_set, model, gui_self):
+def saved_weights(converted_set, non_norm_set, model, gui_self):
 
     # Recreate the exact same model, including its weights and the optimizer
-    GUI.SettingsWindow.updateMessage(gui_self, 30, "Loading model weights")
+    GUI.SettingsWindow.updateMessage(gui_self, 50, "Loading model weights")
     new_model = tf.keras.models.load_model(model)
 
     # Taking in the data as a dataframe
     #test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-8")
-    GUI.SettingsWindow.updateMessage(gui_self, 40, "Loading converted set into algorithm")
+    GUI.SettingsWindow.updateMessage(gui_self, 60, "Loading converted set into algorithm")
 
+    # Try except for the encoding on the input file
     try:
         test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-8")
     except:
         test = pd.read_csv(converted_set, low_memory=False, encoding= "utf-16")
 
-    # Dropping binary and multiclass classification columns for testing set
-    #test = test.drop(['malname','ismal'], axis=1)
+    # Try except for the non normalized file
+    try:
+        n_norm = pd.read_csv(non_norm_set, low_memory=False, encoding= "utf-8")
+    except:
+        n_norm = pd.read_csv(non_norm_set, low_memory=False, encoding= "utf-16")
 
-    temp_hold = test[[
-                "srcip",          # 1
-                "srcport",        # 2
-                "dstip",          # 3
-                "dstport",        # 4
-                "protocol"        # 5
-                ]]
-    test = test.drop([
-                "srcip",          # 1
-                "srcport",        # 2
-                "dstip",          # 3
-                "dstport",        # 4
-                "protocol"        # 5
-                ], axis = 1)
+    # Dropping binary and multiclass classification columns for testing set (Not used in main pipeline)
+    #test = test.drop(['malname','ismal'], axis=1)
     
     # Saving predictions to a variable
-    GUI.SettingsWindow.updateMessage(gui_self, 50, "Making predictions on converted set")
+    GUI.SettingsWindow.updateMessage(gui_self, 70, "Making predictions on converted set")
     test_predictions = new_model.predict(test)
 
     # Taking the predictions and adding them to a new column labeled "predictions" in the input dataset
-    GUI.SettingsWindow.updateMessage(gui_self, 75, "Saving predictions to file")
+    GUI.SettingsWindow.updateMessage(gui_self, 80, "Saving predictions to file")
     get_test = np.argmax(test_predictions, axis = 1)
-    test['predictions'] = get_test
-    test = pd.concat([temp_hold, test], axis = 1)
-    outfile = "predicted_" + converted_set
+    n_norm['predictions'] = get_test
+
+    # Filling null values with 0
+    n_norm.fillna(value = 0, inplace = True)
+
+    # Creating name for outfile
+    outfile = "predicted_" + non_norm_set
 
     # Saving the dataframe containing the predictions to a csv
-    test.to_csv(outfile, index=True)
+    n_norm.to_csv(outfile, index=False)
+
+    # Reversing parameterization
+    pmal.rev_param(outfile)
 
     GUI.SettingsWindow.updateMessage(gui_self, 90, "Sending predicted set to be displayed")
     return outfile
-
-# Calling function to test.
-# CSV files created from train_test_creator then parameterized. 
-#determine_mal_packets("p_training.csv", "p_validation.csv", "p_testing.csv", "curr_model.h5")
-# saved_weights("p_testing.csv", 'curr_model.h5')
