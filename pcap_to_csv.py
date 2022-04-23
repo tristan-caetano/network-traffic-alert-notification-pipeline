@@ -26,7 +26,7 @@ def convert(in_file, gui_self):
   # Name of csv output file
   out_file = in_file + ".csv"
 
-  GUI.SettingsWindow.updateMessage(gui_self, 10, "Using Tshark on pcap file")
+  GUI.SettingsWindow.updateMessage(gui_self, 10, "Using TShark on pcap file")
 
   # Run this command if on Linux
   if platform.system() == "Linux":
@@ -45,7 +45,12 @@ def convert(in_file, gui_self):
   # converted through Windows, the .csv output has utf-16 encoding.  
 
   # Pandas Import CSV to remove null values and add column headers
-  ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
+  try:
+    ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-8")
+  except:
+    ds = pd.read_csv(out_file, low_memory=False, encoding= "utf-16")
+
+  # Filling null values with 0
   ds.fillna(value = 0, inplace = True)
 
   # Getting column names
@@ -67,5 +72,3 @@ def convert(in_file, gui_self):
     # 8. Time to live 10
     # 9. Source TCP Base Seq Number 21
     # 10. TCP connection setup time, the time between the SYN_ACK and the ACK packets 35
-
-  # Ignore Columns: 48, 49
